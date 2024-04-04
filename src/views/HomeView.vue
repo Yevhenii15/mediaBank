@@ -1,9 +1,16 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import useProducts from '../modules/products';
+
+const { products } = useProducts();
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <div>
+    <div v-for="product in products" :key="product.id">
+      <h2>{{ product.name }}</h2>
+      <p>{{ product.quanity }}</p>
+      <!-- Add more fields as needed -->
+    </div>
+  </div>
 </template>
+
