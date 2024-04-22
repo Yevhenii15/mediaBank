@@ -2,6 +2,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import AdminView from '../views/AdminView.vue';
+import EquipmentView from '../views/EquipmentView.vue';
+import SoMeView from '../views/SoMeView.vue';
+import ProductsView from '../views/ProductsView.vue';
 import { auth } from '../firebase.js';
 
 const router = createRouter({
@@ -11,6 +14,21 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
+    },
+    {
+      path: '/equipment',
+      name: 'equipment',
+      component: EquipmentView
+    },
+    {
+      path: '/some',
+      name: 'some',
+      component: SoMeView
+    },
+    {
+      path: '/products',
+      name: 'products',
+      component: ProductsView
     },
     {
       path: '/admin',
@@ -37,12 +55,12 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !user) {
     console.log("Redirecting to home because authentication is required but user is not logged in."); // Debugging
     next('/');
-  } 
+  }
   else if (requiresAdmin) {
     try {
       const tokenResult = await user.getIdTokenResult();
       const isAdmin = tokenResult.claims.admin;
-      
+
       if (!isAdmin) {
         console.log("Redirecting to home because admin access is required but user does not have admin privileges."); // Debugging
         next('/');
