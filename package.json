@@ -10,7 +10,9 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "firebase": "^10.10.0",
+    "firebase-admin": "^12.1.0",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },

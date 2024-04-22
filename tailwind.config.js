@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
-  content: [],
+module.exports = {
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     screens: {
       xs: '360px',
@@ -30,5 +29,3 @@ export default {
   },
   plugins: [],
 }
-
-

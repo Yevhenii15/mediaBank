@@ -1,4 +1,5 @@
-<template>
+<!-- AdminView.vue
+ --><template>
   <div>
     <div>
       <!-- Title for section -->

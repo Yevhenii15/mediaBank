@@ -1,51 +1,65 @@
-/* login.js */
+// login.js
+
 // Import necessary modules and dependencies
 import { ref } from 'vue';
-import {  signOut } from 'firebase/auth'; // Import functions for logging in and out
-import { auth } from '../firebase.js'; // Import both auth and db
+import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
+import { auth } from '../firebase.js';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+
+
 
 // Define the login function
 export function login() {
-
-  // Define reactive variables for user input
-  const email = ref(''); 
+  const email = ref('');
   const password = ref('');
+  const role = ref('user'); // Default role is user
 
+  // Listen for changes to the user's authentication state
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, you can access the custom claims here
+      console.log('User:', user);
+    } else {
+      // No user is signed in
+      console.log('No user signed in.');
+    }
+  });
 
-  // Function to sign up the user
-  let signUp = async () => {
+  const signUp = async (selectedRole) => {
     try {
-      // Create a new user
       const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
       const user = userCredential.user;
-      // Reset input fields
+  
+      // Force refresh the user's token to get the latest custom claims
+      await user.getIdTokenResult(true);
+  
+      console.log('User signed up:', user.uid);
+      console.log('Role:', selectedRole);
+      console.log('User Custom Claims:', user.customClaims);
+  
       email.value = '';
       password.value = '';
-      console.log('User signed up:', user.uid);
-      // Success
     } catch (error) {
       console.error('Sign-up error:', error.message);
     }
   };
   
-
   
-  // Function to log in the user
-    const logIn = async () => {
-        try {
-        // Attempt to sign in the user
-        const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
-        const user = userCredential.user;
-        // Reset input fields
-        email.value = '';
-        password.value = '';
-        console.log('User logged in:', user.uid);
-        // Success
-        } catch (error) {
-        console.error('Sign-in error:', error.message);
-        }
-    };
+
+  const logIn = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+      const user = userCredential.user;
+      
+      // No need to check for admin role here, it should be handled server-side
+      
+      email.value = '';
+      password.value = '';
+      console.log(`User logged in as ${role.value}:`, user.uid);
+    } catch (error) {
+      console.error('Sign-in error:', error.message);
+    }
+  };
 
   // Function to log out the user
   const logOut = async () => {
@@ -62,8 +76,6 @@ export function login() {
       // Handle the error or log additional information as needed
     }
   };
-
-
 
   // Return the reactive variables and functions for use in the Vue component
   return {
