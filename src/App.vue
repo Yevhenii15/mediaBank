@@ -1,5 +1,5 @@
 <template>
-  <header>
+  <header v-if="isLoggedIn">
     <div class="wrapper font-futura">
       <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">Media Bank</h1>
       <nav class="p-[15px] flex items-center justify-between px-[30px]">
@@ -21,13 +21,15 @@
     </div>
   </header>
   <RouterView />
-  <footer>
+  <footer v-if="isLoggedIn">
     <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">2024</h1>
   </footer>
 </template>
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
+import { login } from './modules/login.js';
+const { isLoggedIn } = login();
 
 </script>
 

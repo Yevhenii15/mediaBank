@@ -6,25 +6,27 @@ import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import onAuthSta
 import { auth } from '../firebase.js';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
-
-
 // Define the login function
 export function login() {
   const email = ref('');
   const password = ref('');
   const role = ref('user'); // Default role is user
+  const isLoggedIn = ref(false);
 
   // Listen for changes to the user's authentication state
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in, you can access the custom claims here
       console.log('User:', user);
+      // Update isLoggedIn to true when user is logged in
+      isLoggedIn.value = true;
     } else {
       // No user is signed in
       console.log('No user signed in.');
+      // Update isLoggedIn to false when user is logged out
+      isLoggedIn.value = false;
     }
   });
-
   const signUp = async (selectedRole) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
@@ -50,9 +52,12 @@ export function login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
       const user = userCredential.user;
-      
+  
       // No need to check for admin role here, it should be handled server-side
-      
+  
+      // Set isLoggedIn to true after successful login
+      isLoggedIn.value = true; // Update isLoggedIn value
+  
       email.value = '';
       password.value = '';
       console.log(`User logged in as ${role.value}:`, user.uid);
@@ -60,6 +65,8 @@ export function login() {
       console.error('Sign-in error:', error.message);
     }
   };
+  
+  
 
   // Function to log out the user
   const logOut = async () => {
@@ -83,6 +90,7 @@ export function login() {
     email,
     password,
     signUp,
-    logIn
+    logIn,
+    isLoggedIn,
   };
 }
