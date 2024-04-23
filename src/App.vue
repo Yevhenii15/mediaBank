@@ -10,7 +10,7 @@
             <RouterLink to="/equipment">EQUIPMENT</RouterLink>
             <RouterLink to="/products">PRODUCTS</RouterLink>
             <RouterLink to="/some">SOME POSTS</RouterLink>
-            <RouterLink to="/admin">ADMIN</RouterLink>
+            <RouterLink to="/app-users">APP USERS</RouterLink>
           </div>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" viewBox="0 0 448 512">

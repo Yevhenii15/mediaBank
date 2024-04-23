@@ -1,11 +1,11 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import AdminView from '../views/AdminView.vue';
 import EquipmentView from '../views/EquipmentView.vue';
 import SoMeView from '../views/SoMeView.vue';
 import ProductsView from '../views/ProductsView.vue';
 import { auth } from '../firebase.js';
+import AppUsersView from '@/views/AppUsersView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,9 +31,9 @@ const router = createRouter({
       component: ProductsView
     },
     {
-      path: '/admin',
-      name: 'admin',
-      component: AdminView,
+      path: '/app-users',
+      name: 'app-users',
+      component: AppUsersView,
       meta: {
         requiresAuth: true,
         requiresAdmin: true // Add meta field to specify admin access

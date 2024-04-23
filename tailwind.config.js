@@ -13,7 +13,7 @@ module.exports = {
     },
     fontFamily: {
       'futura': ['futura-pt', 'sans-serif'],
-        },
+    },
     fontSize: {
       'h1': '65px',
       'p': '23px',
@@ -24,6 +24,7 @@ module.exports = {
         main: '#5d89b3',
         text: '#646469',
         text2: '#a7a7a7',
+        border: '#41748c',
       },
     }
   },
