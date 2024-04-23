@@ -28,11 +28,6 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
-
-
-
 
 </script>
 

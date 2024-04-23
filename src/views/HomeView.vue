@@ -2,6 +2,7 @@
 <template>
   <div>
     <div>
+
       <h1 class="text-h1">Sign Up form</h1>
       <input placeholder="Email" v-model="email" />
       <input placeholder="Password" type="password" v-model="password" />
@@ -12,13 +13,18 @@
         <input type="radio" value="admin" v-model="selectedRole" /> Admin
       </label>
       <button @click="signUp(selectedRole)">Sign Up</button>
+
       <hr>
+
       <h1>Log In form</h1>
       <input placeholder="Username" v-model="email" />
       <input placeholder="Password" type="password" v-model="password" />
       <button @click="logIn">Login</button>
+      
       <hr>
+
       <button class="bg-red" @click="logOut">Log Out</button>
+
     </div>
   </div>
 
