@@ -54,7 +54,7 @@ const router = createRouter({
       component: AppUsersView,
       meta: {
         requiresAuth: true,
-        requiresAdmin: true // Add meta field to specify admin access
+        /*  requiresAdmin: true // Add meta field to specify admin access */
       },
     },
   ]
