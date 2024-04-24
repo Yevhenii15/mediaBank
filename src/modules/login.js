@@ -1,11 +1,11 @@
 // login.js
 
 // Import necessary modules and dependencies
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
 import { auth } from '../firebase.js';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-
+import router from '../router/index.js';
 // Define the login function
 export function login() {
   const email = ref('');
@@ -61,6 +61,12 @@ export function login() {
       email.value = '';
       password.value = '';
       console.log(`User logged in as ${role.value}:`, user.uid);
+      // send user to the homepage
+      nextTick(() => {
+        // Redirect the user to the homepage
+        router.push('/');
+      });
+
     } catch (error) {
       console.error('Sign-in error:', error.message);
     }
@@ -74,6 +80,10 @@ export function login() {
       if (auth.currentUser) {
         // Attempt to sign out the user
         await signOut(auth);
+        nextTick(() => {
+          // Redirect the user to the homepage
+          router.push('/login');
+        });
         console.log('User logged out.');
       } else {
         console.error('No user is authenticated. Unable to log out.');
