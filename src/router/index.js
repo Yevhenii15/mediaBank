@@ -7,6 +7,8 @@ import ProductsView from '../views/ProductsView.vue';
 import { auth } from '../firebase.js';
 import AppUsersView from '@/views/AppUsersView.vue';
 import LoginForm from '@/components/LoginForm.vue';
+import { onAuthStateChanged } from 'firebase/auth';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +43,7 @@ const router = createRouter({
       component: ProductsView,
       meta: {
         requiresAuth: true,
+        requiresAdmin: true, // Add meta field to specify admin access
       },
     },
     {
@@ -54,50 +57,68 @@ const router = createRouter({
       component: AppUsersView,
       meta: {
         requiresAuth: true,
+        
         /*  requiresAdmin: true // Add meta field to specify admin access */
       },
     },
   ]
 });
-
-// Add a flag to track if it's the first page load
-let isFirstLoad = true;
-
 router.beforeEach(async (to, from, next) => {
+  // Wait for Firebase authentication state to resolve
+  await new Promise(resolve => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+
   const user = auth.currentUser;
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
 
   console.log("User:", user); // Debugging
-  console.log("Requires Auth:", requiresAuth); // Debugging
-  console.log("Requires Admin:", requiresAdmin); // Debugging
 
-  // Check if it's the first page load and the user is not logged in
-  if (isFirstLoad && !user) {
-    isFirstLoad = false;
-    next('/login'); // Redirect to login page
-  } else if (requiresAuth && !user) {
-    next('/login'); // Redirect to login page if authentication is required and user is not logged in
-  } else if (requiresAdmin) {
-    try {
-      const tokenResult = await user.getIdTokenResult();
-      const isAdmin = tokenResult.claims.admin;
-
-      if (!isAdmin) {
-        console.log("Redirecting to home because admin access is required but user does not have admin privileges."); // Debugging
-        next('/');
-      } else {
-        console.log("Allowing navigation."); // Debugging
-        next();
-      }
-    } catch (error) {
-      console.error('Error fetching user token:', error);
-      next('/');
+  // Check if authentication is required for the route
+  if (requiresAuth) {
+    if (!user) {
+      next('/login');
+      return;
     }
-  } else {
-    console.log("Allowing navigation."); // Debugging
-    next();
+  
+    if (requiresAdmin) {
+      try {
+        const isAdminUser = await isAdmin(user);
+  
+        if (!isAdminUser) {
+          console.log("Redirecting to home because admin access is required but user does not have admin privileges.");
+          next('/');
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking admin privileges:', error);
+        next('/');
+        return;
+      }
+    }
   }
+  
+
+  // Allow navigation if authentication is successful or not required
+  console.log("Allowing navigation."); // Debugging
+  next();
 });
+
+async function isAdmin(user) {
+  try {
+    const tokenResult = await user.getIdTokenResult();
+    // Check if the 'admin' claim exists and is set to true
+    return tokenResult.claims && tokenResult.claims.admin === true;
+  } catch (error) {
+    console.error('Error fetching user token:', error);
+    return false;
+  }
+}
+
+
 
 export default router;
