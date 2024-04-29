@@ -40,6 +40,9 @@ const downloadImageHandler = async (imageUrl) => {
         const downloadUrl = await downloadImage(imageUrl);
         if (downloadUrl) {
             const response = await fetch(downloadUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -57,6 +60,7 @@ const downloadImageHandler = async (imageUrl) => {
         console.error('Image download failed:', error.message);
     }
 };
+
 
 
 
