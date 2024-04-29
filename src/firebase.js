@@ -5,6 +5,7 @@ import { getFirestore } from "firebase/firestore"; // <- needed for DB
 import { getStorage } from 'firebase/storage'; // <- needed for Storage
 import { getAuth } from 'firebase/auth'; // <- needed for Authentication
 
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 

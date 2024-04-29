@@ -1,11 +1,12 @@
-// login.js
-
-// Import necessary modules and dependencies
+/* login.js */
 import { nextTick, ref } from 'vue';
 import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
-import { auth } from '../firebase.js';
+import { auth } from '../firebase.js'; // Adjusted import statement
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import router from '../router/index.js';
+
+
+
 // Define the login function
 export function login() {
   const email = ref('');
@@ -27,6 +28,7 @@ export function login() {
       isLoggedIn.value = false;
     }
   });
+
   const signUp = async (selectedRole) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
@@ -47,17 +49,25 @@ export function login() {
   };
   
   
+  
+  // Function to validate email format
+  const validateEmail = (email) => {
+    // Regular expression for basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
 
   const logIn = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
       const user = userCredential.user;
-  
+
       // No need to check for admin role here, it should be handled server-side
-  
+
       // Set isLoggedIn to true after successful login
       isLoggedIn.value = true; // Update isLoggedIn value
-  
+
       email.value = '';
       password.value = '';
       console.log(`User logged in as ${role.value}:`, user.uid);
@@ -71,8 +81,6 @@ export function login() {
       console.error('Sign-in error:', error.message);
     }
   };
-  
-  
 
   // Function to log out the user
   const logOut = async () => {
