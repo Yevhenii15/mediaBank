@@ -1,7 +1,20 @@
 // SoMe.js
-import { uploadBytes, getDownloadURL, getStorage, listAll, ref as storageRef, deleteObject } from 'firebase/storage'; // Import uploadBytes here
+import { uploadBytes, getDownloadURL, getStorage, listAll, ref as storageRef, deleteObject, getMetadata } from 'firebase/storage';
 
 const SoMePost = () => {
+
+    // Function to download an image
+    const downloadImage = async (imageUrl) => {
+        try {
+            // Create an anchor element to trigger the download
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.target = "_blank";
+            link.click();
+        } catch (error) {
+            console.error('Error downloading the image:', error);
+        }
+    };
 
     // Function to upload images to Firebase Storage
     const handleImageUpload = async (event) => {
@@ -43,23 +56,6 @@ const SoMePost = () => {
             console.error('Error deleting the image:', error);
         }
     };
-
-    const downloadImage = async (imageUrl) => {
-        const storage = getStorage();
-        const imageRef = storageRef(storage, imageUrl);
-        try {
-            // Get the download URL for the specified image reference
-            const downloadUrl = await getDownloadURL(imageRef);
-            return downloadUrl;
-        } catch (error) {
-            console.error('Error downloading image:', error);
-            return null;
-        }
-    };
-
-
-
-
 
 
     // Function to get all images from Firebase Storage in a directory

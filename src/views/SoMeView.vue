@@ -1,12 +1,30 @@
 <template>
-    <div>
-        SoMe
-        <input type="file" @change="handleImageUpload($event)" multiple :data-product="null">
-        <button @click="reloadPage">Add Image</button>
-        <div v-for="(imageUrl, index) in imageUrls" :key="index">
-            <img :src="imageUrl" alt="Image">
-            <button @click="deleteImageHandler(imageUrl)">Delete Image</button>
-            <button @click="downloadImageHandler(imageUrl)">Download Image</button>
+    <div class="flex flex-col items-center">
+        <div class="w-[100%] flex items-center flex-col mt-[20px]">
+            <h1 class="text-text font-futura font-bold text-p">ADD SOME POST</h1>
+            <div class="w-[50%] flex justify-between my-[20px]">
+                <input class="file:bg-main w-[50%]  
+            file:text-white
+            file:border-none
+            file:px-[40px]
+            file:py-[9px]
+            file:rounded-lg
+            file:mr-5
+            font-futura " type="file" @change="handleImageUpload($event)" multiple :data-product="null">
+                <button class=" bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
+                    Post</button>
+            </div>
+        </div>
+        <div class="w-[60%] flex  flex-row flex-wrap justify-between">
+            <div class="w-[21%] flex flex-col" v-for="(imageUrl, index) in imageUrls" :key="index">
+                <img class="w-48 h-48 object-cover object-center border border-text" :src="imageUrl" alt="Image">
+                <div class="flex justify-between w-[100%]">
+                    <button class=" bg-main text-white px-[12px] py-[0.5px] rounded-md my-3"
+                        @click="deleteImageHandler(imageUrl)">Delete</button>
+                    <button class=" bg-main text-white px-[12px] py-[0.5px] rounded-md my-3"
+                        @click="downloadImage(imageUrl)">Download</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -34,38 +52,6 @@ onMounted(async () => {
 const reloadPage = () => {
     location.reload();
 };
-
-const downloadImageHandler = async (imageUrl) => {
-    try {
-        const downloadUrl = await downloadImage(imageUrl);
-        if (downloadUrl) {
-            const response = await fetch(downloadUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = ''; // This will prompt the browser to download the file with its original name
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        } else {
-            console.error('Image download failed: Download URL not available.');
-        }
-    } catch (error) {
-        console.error('Image download failed:', error.message);
-    }
-};
-
-
-
-
-
-
 
 </script>
 
