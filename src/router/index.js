@@ -57,7 +57,7 @@ const router = createRouter({
       component: AppUsersView,
       meta: {
         requiresAuth: true,
-        
+
         /*  requiresAdmin: true // Add meta field to specify admin access */
       },
     },
@@ -84,11 +84,11 @@ router.beforeEach(async (to, from, next) => {
       next('/login');
       return;
     }
-  
+
     if (requiresAdmin) {
       try {
         const isAdminUser = await isAdmin(user);
-  
+
         if (!isAdminUser) {
           console.log("Redirecting to home because admin access is required but user does not have admin privileges.");
           next('/');
@@ -101,7 +101,7 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   }
-  
+
 
   // Allow navigation if authentication is successful or not required
   console.log("Allowing navigation."); // Debugging
