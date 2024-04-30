@@ -1,3 +1,4 @@
+<!-- SoMeView.vue -->
 <template>
     <div>
         SoMe
@@ -38,28 +39,31 @@ const reloadPage = () => {
 const downloadImageHandler = async (imageUrl) => {
     try {
         const downloadUrl = await downloadImage(imageUrl);
-        if (downloadUrl) {
-            const response = await fetch(downloadUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = ''; // This will prompt the browser to download the file with its original name
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        } else {
+        if (!downloadUrl) {
             console.error('Image download failed: Download URL not available.');
+            return;
         }
+        
+        const response = await fetch(downloadUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image. HTTP error! Status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = ''; // This will prompt the browser to download the file with its original name
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     } catch (error) {
         console.error('Image download failed:', error.message);
     }
 };
+
 
 
 
