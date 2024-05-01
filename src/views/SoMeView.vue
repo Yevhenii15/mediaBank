@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center font-futura">
         <div class="w-[100%] flex items-center flex-col mt-[20px]">
-            <h1 class="text-text font-futura font-bold text-p">ADD SOME POST</h1>
+            <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
             <div class="w-[50%] flex justify-between my-[20px]">
                 <input class="file:bg-main w-[50%]  
             file:text-white
@@ -10,8 +10,9 @@
             file:py-[9px]
             file:rounded-lg
             file:mr-5
+            file:hover:bg-text
             font-futura " type="file" @change="handleImageUpload($event)" multiple :data-product="null">
-                <button class=" bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
+                <button class=" hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
                     Post</button>
             </div>
         </div>
