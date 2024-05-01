@@ -1,15 +1,43 @@
 <!-- ProductView.vue
  --><template>
-    <div>
-        <div>
+    <div class="font-futura flex justify-center w-[100%]">
+        <div class="w-[60%]">
             <!-- Title for section -->
-            <h1>Add new product</h1>
+            <h1 class="w-[100%] text-p text-text flex justify-center my-5">ADD NEW PRODUCT</h1>
             <!-- Form for adding new product -->
-            <div>
-                <input v-model="addProductData.productName" type="text" placeholder="Product Name">
-                <input v-model="addProductData.productDescription" type="text" placeholder="Product Description">
-                <input type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
-                <button @click="firebaseAddSingleItem">Add Item</button>
+            <div class="flex w-[100%]">
+                <input class="w-[48%] border border-main rounded-lg pl-3 py-1 mr-[2%]"
+                    v-model="addProductData.productName" type="text" placeholder="Product Name">
+                <select class="w-[48%] pl-3 border border-main rounded-lg ml-[2%] text-text"
+                    v-model="addProductData.productType">
+                    <option value="">Select Product Type</option>
+                    <option value="face">Face</option>
+                    <option value="eye">Eye</option>
+                    <option value="hair">Hair</option>
+                    <option value="serum">Serum</option>
+                    <option value="serum-device">Serum Device</option>
+                </select>
+            </div>
+            <div class="flex my-8">
+                <input class="w-[48%] border border-main rounded-lg pl-3 pt-1 pb-11 mr-[2%]"
+                    v-model="addProductData.productDescription" type="text" placeholder="Product Description">
+                <input class="w-[48%] ml-[2%]
+             file:bg-white 
+            file:text-main
+            file:border
+            file:border-main
+            file:px-[40px]
+            file:py-
+            file:rounded-lg
+            file:mr-5
+            file:hover:bg-main
+            file:hover:text-white
+            font-futura" type=" file" @change="handleImageUpload($event, null)" multiple :data-product="null">
+            </div>
+            <div class="flex justify-center w-[100%]">
+                <button
+                    class="flex w-[40%] justify-center hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg"
+                    @click="firebaseAddSingleItem">Add Product</button>
             </div>
             <!-- Displaying and editing products -->
             <div>

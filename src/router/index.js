@@ -43,7 +43,7 @@ const router = createRouter({
       component: ProductsView,
       meta: {
         requiresAuth: true,
-        requiresAdmin: true, // Add meta field to specify admin access
+        /*  requiresAdmin: true, */ // Add meta field to specify admin access
       },
     },
     {

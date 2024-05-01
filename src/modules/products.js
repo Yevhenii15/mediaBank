@@ -109,22 +109,26 @@ const useProducts = () => {
   const addProductData = ref({
     productName: '',
     productDescription: '',
-    productImages: [], // Initialize as an empty array
+    productType: '', // New property to store the selected product type
+    productImages: [],
   });
+
 
   // Add a product to Firestore
   const firebaseAddSingleItem = async () => {
-    // Check if the product name, price, and in stock fields are not empty
-    if (addProductData.value) {
+    // Check if the product name, description, and type are not empty
+    if (addProductData.value.productName && addProductData.value.productDescription && addProductData.value.productType) {
       // Add the product to Firestore
       await addDoc(collection(db, 'products'), {
         productName: addProductData.value.productName,
         productDescription: addProductData.value.productDescription,
-        productImages: addProductData.value.productImages, // Use the array of image URLs
+        productType: addProductData.value.productType, // Include product type
+        productImages: addProductData.value.productImages,
       }).then(() => {
         // Reset other fields and the image URLs
         addProductData.value.productName = '';
         addProductData.value.productDescription = '';
+        addProductData.value.productType = ''; // Reset product type
         addProductData.value.productImages = []; // Reset the image URLs
 
         // Reset the input field
@@ -133,9 +137,9 @@ const useProducts = () => {
           inputElement.value = '';
         }
       });
-      // console.log('Item added!');
     }
   };
+
 
   // Update a product in Firestore
   const firebaseUpdateSingleItem = async (product) => {
