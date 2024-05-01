@@ -21,22 +21,13 @@
             <div class="flex my-8">
                 <input class="w-[48%] border border-main rounded-lg pl-3 pt-1 pb-11 mr-[2%]"
                     v-model="addProductData.productDescription" type="text" placeholder="Product Description">
-                <input class="w-[48%] ml-[2%]
-             file:bg-white 
-            file:text-main
-            file:border
-            file:border-main
-            file:px-[40px]
-            file:py-
-            file:rounded-lg
-            file:mr-5
-            file:hover:bg-main
-            file:hover:text-white
-            font-futura" type=" file" @change="handleImageUpload($event, null)" multiple :data-product="null">
+                <input
+                    class="w-[48%] ml-[2%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
+                    type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
+
             </div>
             <div class="flex justify-center w-[100%]">
-                <button
-                    class="flex w-[40%] justify-center hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg"
+                <button class="flex w-[40%] justify-center bg-main text-white px-[70px] py-[9px] rounded-lg"
                     @click="firebaseAddSingleItem">Add Product</button>
             </div>
             <!-- Displaying and editing products -->
