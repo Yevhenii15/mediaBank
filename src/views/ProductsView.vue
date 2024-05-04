@@ -37,51 +37,19 @@
                     @click="firebaseAddSingleItem">Add Product</button>
             </div>
             <!-- Displaying and editing products -->
-            <div>
+            <div class="w-[100%] flex flex-wrap my-7">
                 <!-- Looping through all products -->
-                <div v-for="product in products" :key="product.id">
-                    <div v-for="(image, index) in product.productImages" :key="index">
-                        <img :src="image" alt="Product Image" />
-                        <!-- To delete img you need to click delete button and after edit update -->
-                        <button @click="deleteImage(product, index)">Delete Image</button>
-                    </div>
-                    <p>
-                        Title: <span>{{ product.productName }}</span>
-                    </p>
-                </div>
-                <div v-for="product in products" :key="product.id">
-                    <p>
-                        Description: <span>{{ product.productDescription }}</span>
-                    </p>
-
-                    <!-- Delete item -->
-                    <button @click="firebaseDeleteSingleItem(product.id, product)">Delete item</button>
-
-                    <!-- Update item -->
-                    <p>
-                        <input v-model="product.productName" type="text" placeholder="New Product Name">
-                        <input v-model="product.productDescription" type="text" placeholder="New Product Description">
-                        <!-- After you upload img you should click edit update -->
-                        <input type="file" @change="handleImageUpload($event, product)" multiple
-                            :data-product="product.id">
-                        <input type="file" @change="handleFileUpload($event, product)" multiple
-                            :data-product="product.id">
-                    </p>
-                    <div>
-
-                        <!-- Displaying files -->
-                        <div v-for="(file, index) in product.productFiles" :key="index">
-                            <a :href="file" target="_blank">{{ file }}</a>
-                            <!-- Delete file button -->
-                            <button @click="deleteFile(product, index)">Delete File</button>
-                            <button @click="downloadFile(file)">Download File</button>
+                <div class="w-[21%] mx-[2%]  border border-main rounded-3xl my-3" v-for="product in products"
+                    :key="product.id">
+                    <router-link :to="'/product/' + product.id" class="flex flex-col items-center">
+                        <div v-for="(image, index) in product.productImages" :key="index">
+                            <img class="w-48 h-48 object-cover object-center rounded-3xl" :src="image"
+                                alt="Product Image" />
                         </div>
-                        <!-- Rest of the existing content remains the same... -->
-                    </div>
-
-                    <!-- Edit and update, you should it for all changes! -->
-                    <button @click="product.isEditing = true">Edit Item</button>
-                    <button @click="firebaseUpdateSingleItem(product)" v-if="product.isEditing">Update</button>
+                        <h1 class="text-text text-[17px] uppercase relative top-[-10px] font-bold mb-2">
+                            {{ product.productName }}
+                        </h1>
+                    </router-link>
                 </div>
                 <hr>
             </div>
@@ -96,15 +64,10 @@ import useProducts from '../modules/products.js';
 const {
     products,
     getProductsData,
-    firebaseDeleteSingleItem,
     firebaseAddSingleItem,
     addProductData,
-    firebaseUpdateSingleItem,
-    deleteImage,
     handleImageUpload,
-    deleteFile,        // Add new function
     handleFileUpload, // Add new function
-    downloadFile,     // Add new function
 } = useProducts();
 
 onMounted(getProductsData);
