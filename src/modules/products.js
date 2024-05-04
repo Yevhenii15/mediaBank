@@ -173,6 +173,7 @@ const useProducts = () => {
   };
 
 
+<<<<<<< HEAD
   // Get the products data from Firestore
   const products = ref([]);
   const productDataRef = collection(db, 'products');
@@ -197,6 +198,33 @@ const useProducts = () => {
     productImages: [],
 
   });
+=======
+ // Get the products data from Firestore
+ const products = ref([]);
+ const productDataRef = collection(db, 'products');
+ const getProductsData = () => {
+   onSnapshot(productDataRef, (snapshot) => {
+     products.value = snapshot.docs.map((doc) => {
+       return {
+         id: doc.id,
+         ...doc.data(),
+         isEditing: false,
+       };
+     });
+   });
+ };
+
+ // Add product data
+ const addProductData = ref({
+   productName: '',
+   productDescription: '',
+   productType: '', // New property to store the selected product type
+   productFiles: [],
+   productImages: [],
+
+ });
+
+>>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
 
 
 
@@ -262,24 +290,39 @@ const useProducts = () => {
   };
 
   // Delete a product from Firestore and associated images/files from Firebase Storage
+<<<<<<< HEAD
   const firebaseDeleteSingleItem = async (id, product) => {
     try {
+=======
+const firebaseDeleteSingleItem = async (id, product) => {
+  try {
+>>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
       // Delete the product from Firestore
       const docRef = doc(db, 'products', id);
       await deleteDoc(docRef);
 
       // Delete associated images from Firebase Storage
       if (product && product.productImages) {
+<<<<<<< HEAD
         const storage = getStorage();
         for (const imageUrl of product.productImages) {
           const imageRef = storageRef(storage, imageUrl);
           await deleteObject(imageRef);
           console.log('Image deleted:', imageUrl);
         }
+=======
+          const storage = getStorage();
+          for (const imageUrl of product.productImages) {
+              const imageRef = storageRef(storage, imageUrl);
+              await deleteObject(imageRef);
+              console.log('Image deleted:', imageUrl);
+          }
+>>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
       }
 
       // Delete associated files from Firebase Storage
       if (product && product.productFiles) {
+<<<<<<< HEAD
         const storage = getStorage();
         for (const fileUrl of product.productFiles) {
           const fileRef = storageRef(storage, fileUrl);
@@ -293,6 +336,21 @@ const useProducts = () => {
       console.error('Error deleting product:', error);
     }
   };
+=======
+          const storage = getStorage();
+          for (const fileUrl of product.productFiles) {
+              const fileRef = storageRef(storage, fileUrl);
+              await deleteObject(fileRef);
+              console.log('File deleted:', fileUrl);
+          }
+      }
+
+      console.log('Product and associated files deleted successfully!');
+  } catch (error) {
+      console.error('Error deleting product:', error);
+  }
+};
+>>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
 
   return {
     getProductsData,
