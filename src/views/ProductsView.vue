@@ -21,9 +21,20 @@
             <div class="flex my-8">
                 <input class="w-[48%] border border-main rounded-lg pl-3 pt-1 pb-11 mr-[2%]"
                     v-model="addProductData.productDescription" type="text" placeholder="Product Description">
-                <input
-                    class="w-[48%] ml-[2%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
-                    type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
+                    <div class="w-[48%] ml-[2%] flex flex-col justify-between">
+                        
+                        <input
+                            class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
+                            type="file" @change="handleImageUpload($event, null)" multiple :data-product="null"
+                        >
+                        <input
+                            class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
+                            type="file"
+                            @change="handleFileUpload($event, null)"
+                            multiple
+                            :data-product="null"
+                        >
+                    </div>
 
             </div>
             <div class="flex justify-center w-[100%]">
@@ -49,7 +60,8 @@
                     </p>
 
                     <!-- Delete item -->
-                    <button @click="firebaseDeleteSingleItem(product.id)">Delete item</button>
+                    <button @click="firebaseDeleteSingleItem(product.id, product)">Delete item</button>
+
                     <!-- Update item -->
                     <p>
                         <input v-model="product.productName" type="text" placeholder="New Product Name">
@@ -57,7 +69,21 @@
                         <!-- After you upload img you should click edit update -->
                         <input type="file" @change="handleImageUpload($event, product)" multiple
                             :data-product="product.id">
+                        <input type="file" @change="handleFileUpload($event, product)" multiple
+                            :data-product="product.id">
                     </p>
+                    <div>
+
+      <!-- Displaying files -->
+      <div v-for="(file, index) in product.productFiles" :key="index">
+        <a :href="file" target="_blank">{{ file }}</a>
+        <!-- Delete file button -->
+        <button @click="deleteFile(product, index)">Delete File</button>
+        <button @click="downloadFile(file)">Download File</button>
+      </div>
+      <!-- Rest of the existing content remains the same... -->
+    </div>
+
                     <!-- Edit and update, you should it for all changes! -->
                     <button @click="product.isEditing = true">Edit Item</button>
                     <button @click="firebaseUpdateSingleItem(product)" v-if="product.isEditing">Update</button>
@@ -72,7 +98,19 @@
 import { onMounted } from 'vue';
 import useProducts from '../modules/products.js';
 
-const { products, getProductsData, firebaseDeleteSingleItem, firebaseAddSingleItem, addProductData, firebaseUpdateSingleItem, deleteImage, handleImageUpload, addItemToArray, deleteItemFromArray } = useProducts();
+const {
+  products,
+  getProductsData,
+  firebaseDeleteSingleItem,
+  firebaseAddSingleItem,
+  addProductData,
+  firebaseUpdateSingleItem,
+  deleteImage,
+  handleImageUpload,
+  deleteFile,        // Add new function
+  handleFileUpload, // Add new function
+  downloadFile,     // Add new function
+} = useProducts();
 
 onMounted(getProductsData);
 </script>
