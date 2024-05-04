@@ -8,6 +8,7 @@ import { auth } from '../firebase.js';
 import AppUsersView from '@/views/AppUsersView.vue';
 import LoginForm from '@/components/LoginForm.vue';
 import { onAuthStateChanged } from 'firebase/auth';
+import ProductDetailes from '@/components/ProductDetailes.vue';
 
 
 const router = createRouter({
@@ -25,6 +26,14 @@ const router = createRouter({
       path: '/equipment',
       name: 'equipment',
       component: EquipmentView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/product/:id',
+      name: 'product-detailes',
+      component: ProductDetailes,
       meta: {
         requiresAuth: true,
       },

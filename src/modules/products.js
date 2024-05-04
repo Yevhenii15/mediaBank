@@ -4,8 +4,28 @@ import { db } from '../firebase.js';
 import { ref } from 'vue';
 import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject, listAll, getMetadata } from 'firebase/storage';
+import { getDoc } from 'firebase/firestore';
 
 const useProducts = () => {
+  const getProductById = async (productId) => {
+    try {
+      const docRef = doc(db, 'products', productId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        // Initialize product with an empty array for productImages
+        const productData = docSnap.data();
+        productData.productImages = productData.productImages || [];
+        return productData;
+      } else {
+        throw new Error('Product not found');
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      throw error;
+    }
+  };
+
   // Function to upload files to Firebase Storage
   const handleFileUpload = async (event, product) => {
     const storage = getStorage();
@@ -112,7 +132,6 @@ const useProducts = () => {
         }
         // Add the image URLs to the product
         product.productImages.push(...imageUrls);
-
         // Update the product in Firestore with the new images
         await updateDoc(doc(db, 'products', product.id), {
           productImages: product.productImages, // Updated array of image URLs
@@ -172,8 +191,6 @@ const useProducts = () => {
     }
   };
 
-
-<<<<<<< HEAD
   // Get the products data from Firestore
   const products = ref([]);
   const productDataRef = collection(db, 'products');
@@ -198,33 +215,6 @@ const useProducts = () => {
     productImages: [],
 
   });
-=======
- // Get the products data from Firestore
- const products = ref([]);
- const productDataRef = collection(db, 'products');
- const getProductsData = () => {
-   onSnapshot(productDataRef, (snapshot) => {
-     products.value = snapshot.docs.map((doc) => {
-       return {
-         id: doc.id,
-         ...doc.data(),
-         isEditing: false,
-       };
-     });
-   });
- };
-
- // Add product data
- const addProductData = ref({
-   productName: '',
-   productDescription: '',
-   productType: '', // New property to store the selected product type
-   productFiles: [],
-   productImages: [],
-
- });
-
->>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
 
 
 
@@ -261,7 +251,6 @@ const useProducts = () => {
       }
     }
   };
-
   // Update a product in Firestore
   const firebaseUpdateSingleItem = async (product) => {
     if (
@@ -290,39 +279,24 @@ const useProducts = () => {
   };
 
   // Delete a product from Firestore and associated images/files from Firebase Storage
-<<<<<<< HEAD
   const firebaseDeleteSingleItem = async (id, product) => {
     try {
-=======
-const firebaseDeleteSingleItem = async (id, product) => {
-  try {
->>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
       // Delete the product from Firestore
       const docRef = doc(db, 'products', id);
       await deleteDoc(docRef);
 
       // Delete associated images from Firebase Storage
       if (product && product.productImages) {
-<<<<<<< HEAD
         const storage = getStorage();
         for (const imageUrl of product.productImages) {
           const imageRef = storageRef(storage, imageUrl);
           await deleteObject(imageRef);
           console.log('Image deleted:', imageUrl);
         }
-=======
-          const storage = getStorage();
-          for (const imageUrl of product.productImages) {
-              const imageRef = storageRef(storage, imageUrl);
-              await deleteObject(imageRef);
-              console.log('Image deleted:', imageUrl);
-          }
->>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
       }
 
       // Delete associated files from Firebase Storage
       if (product && product.productFiles) {
-<<<<<<< HEAD
         const storage = getStorage();
         for (const fileUrl of product.productFiles) {
           const fileRef = storageRef(storage, fileUrl);
@@ -336,21 +310,6 @@ const firebaseDeleteSingleItem = async (id, product) => {
       console.error('Error deleting product:', error);
     }
   };
-=======
-          const storage = getStorage();
-          for (const fileUrl of product.productFiles) {
-              const fileRef = storageRef(storage, fileUrl);
-              await deleteObject(fileRef);
-              console.log('File deleted:', fileUrl);
-          }
-      }
-
-      console.log('Product and associated files deleted successfully!');
-  } catch (error) {
-      console.error('Error deleting product:', error);
-  }
-};
->>>>>>> 05f305534aae610a710557942cee65c18a3ac49b
 
   return {
     getProductsData,
@@ -364,6 +323,7 @@ const firebaseDeleteSingleItem = async (id, product) => {
     downloadFile,
     deleteFile,
     handleFileUpload,
+    getProductById,
   };
 };
 
