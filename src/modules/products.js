@@ -16,6 +16,8 @@ const useProducts = () => {
         // Initialize product with an empty array for productImages
         const productData = docSnap.data();
         productData.productImages = productData.productImages || [];
+        productData.id = docSnap.id; // Assign the document ID to the product object
+        console.log('Retrieved product:', productData); // Log the retrieved product object
         return productData;
       } else {
         throw new Error('Product not found');
@@ -26,6 +28,8 @@ const useProducts = () => {
     }
   };
 
+
+
   // Function to upload files to Firebase Storage
   const handleFileUpload = async (event, product) => {
     const storage = getStorage();
@@ -35,7 +39,7 @@ const useProducts = () => {
 
     try {
       const filePromises = Array.from(files).map(async (file) => {
-        const fileRef = storageRef(storage, `products/files/${Date.now()}_${file.name}`);
+        const fileRef = storageRef(storage, `products/files/${file.name}`);
         await uploadBytes(fileRef, file);
         return getDownloadURL(fileRef);
       });
@@ -64,27 +68,27 @@ const useProducts = () => {
 
   // Function to delete a file from Firebase Storage
   const deleteFile = async (product, index) => {
+    console.log('Deleting file:', product, index); // Log the product and index
     if (index >= 0 && product.productFiles && product.productFiles.length > index) {
       const fileUrl = product.productFiles[index];
-
       try {
         const storage = getStorage();
         const fileRef = storageRef(storage, fileUrl);
-
         await deleteObject(fileRef);
-
         product.productFiles.splice(index, 1);
-
         await updateProductInFirestore(product);
-
-        console.log('File deleted!');
+        console.log('File deleted:', fileUrl);
       } catch (error) {
         console.error('Error deleting the file:', error);
       }
     } else {
       console.error('Invalid index or file URLs not found.');
+      console.log('Product:', product);
+      console.log('Index:', index);
+      console.log('Product files:', product.productFiles);
     }
   };
+
 
   // Function to download files from Firebase Storage
   const downloadFile = async (fileUrl) => {
@@ -152,6 +156,7 @@ const useProducts = () => {
   };
 
   // Function to delete an image from Firebase Storage
+  // Function to delete an image from Firebase Storage
   const deleteImage = async (product, index) => {
     // Check if the index is valid
     if (index >= 0 && product.productImages && product.productImages.length > index) {
@@ -172,16 +177,24 @@ const useProducts = () => {
         // Update the product in Firestore to reflect the changes
         await updateProductInFirestore(product);
 
-        // console.log('Image deleted!');
+        console.log('Image deleted!');
       } catch (error) {
         console.error('Error deleting the image:', error);
+        // Handle the error gracefully
+        // For example, you can log the error and still proceed with updating the UI
+        // Or you can show a user-friendly message to the user
       }
     } else {
       console.error('Invalid index or image URLs not found.');
     }
   };
+
   const updateProductInFirestore = async (product) => {
     try {
+      if (!product.id) {
+        throw new Error('Product ID is missing.');
+      }
+
       const docRef = doc(db, 'products', product.id);
       await updateDoc(docRef, product);
       console.log('Product updated successfully in Firestore');
@@ -190,6 +203,7 @@ const useProducts = () => {
       throw error;
     }
   };
+
 
   // Get the products data from Firestore
   const products = ref([]);
@@ -224,8 +238,7 @@ const useProducts = () => {
       addProductData.value.productName &&
       addProductData.value.productDescription &&
       addProductData.value.productType &&
-      addProductData.value.productFiles.length > 0 &&
-      addProductData.value.productImages.length > 0
+      addProductData.value.productImages.length > 0 // Only check if images are added
     ) {
       try {
         const productData = {
@@ -249,34 +262,62 @@ const useProducts = () => {
       } catch (error) {
         console.error('Error adding product:', error);
       }
+    } else {
+      try {
+        const productData = {
+          productName: addProductData.value.productName,
+          productDescription: addProductData.value.productDescription,
+          productType: addProductData.value.productType,
+          productImages: addProductData.value.productImages, // Include product images only
+        };
+
+        await addDoc(collection(db, 'products'), productData);
+
+        // Reset fields after adding
+        addProductData.value.productName = '';
+        addProductData.value.productDescription = '';
+        addProductData.value.productType = '';
+        addProductData.value.productImages = [];
+
+        console.log('Product added successfully without files!');
+      } catch (error) {
+        console.error('Error adding product:', error);
+      }
     }
   };
+
   // Update a product in Firestore
-  const firebaseUpdateSingleItem = async (product) => {
-    if (
-      product.productName &&
-      product.productDescription &&
-      product.productType &&
-      product.productFiles.length > 0 &&
-      product.productImages.length > 0 // Check if images are added
-    ) {
+  const firebaseUpdateSingleItem = async (product, newProductName, newProductDescription) => {
+    if (product.id) {
       try {
+        // Update the product object with new name and description
+        product.productName = newProductName;
+        product.productDescription = newProductDescription;
+
+        // Construct the updateData object with updated values
         const updateData = {
           productName: product.productName,
           productDescription: product.productDescription,
           productType: product.productType,
-          productFiles: product.productFiles, // Include product files
-          productImages: product.productImages, // Include product images
+          productFiles: product.productFiles,
+          productImages: product.productImages,
         };
 
+        // Update the document in Firestore with the updated data
         await updateDoc(doc(db, 'products', product.id), updateData);
 
         console.log('Product updated successfully!');
       } catch (error) {
         console.error('Error updating product:', error);
       }
+    } else {
+      console.error('Product ID is missing.');
     }
   };
+
+
+
+
 
   // Delete a product from Firestore and associated images/files from Firebase Storage
   const firebaseDeleteSingleItem = async (id, product) => {
