@@ -9,7 +9,7 @@
     </div>
 
     <div class="icons flex justify-around">
-      <a href="/equipment"
+      <a href="/oxyequipment"
         class="equipment w-[20%] flex px-[78px] py-5 flex-col border-[1px] border-border rounded-[52px]">
         <img src="../images/equipment.svg" alt="">
         <h1 class="flex justify-center p-3 font-futura text-main text-p mt-[25px]">Equipment</h1>

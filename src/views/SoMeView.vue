@@ -18,7 +18,8 @@
         </div>
         <div class="w-[60%] flex  flex-row flex-wrap">
             <div class="w-[21%] mx-[2%] flex flex-col" v-for="(imageUrl, index) in imageUrls" :key="index">
-                <img class="w-48 h-48 object-cover object-center border border-text" :src="imageUrl" alt="Image">
+                <img class="w-48 h-48 object-cover object-center border border-main rounded-3xl" :src="imageUrl"
+                    alt="Image">
                 <div class="flex justify-between">
                     <button class=" bg-main text-white px-[12px] py-[0.5px] rounded-md my-3"
                         @click="deleteImageHandler(imageUrl)">Delete</button>
