@@ -1,18 +1,20 @@
-/* login.js */
-import { nextTick, ref } from 'vue';
-import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
-import { auth } from '../firebase.js'; // Adjusted import statement
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import router from '../router/index.js';
-
-
+//login.js
+// Import the necessary functions from Firebase Authentication
+import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { ref, nextTick } from 'vue';
+import router from '../router'; // Import router from your Vue router setup
 
 // Define the login function
 export function login() {
   const email = ref('');
   const password = ref('');
-  const role = ref('user'); // Default role is user
   const isLoggedIn = ref(false);
+
+  // Get the Auth instance
+  const auth = getAuth();
 
   // Listen for changes to the user's authentication state
   onAuthStateChanged(auth, (user) => {
@@ -29,54 +31,47 @@ export function login() {
     }
   });
 
-  const signUp = async (selectedRole) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-      const user = userCredential.user;
-  
-      // Force refresh the user's token to get the latest custom claims
-      await user.getIdTokenResult(true);
-  
-      console.log('User signed up:', user.uid);
-      console.log('Role:', selectedRole);
-      console.log('User Custom Claims:', user.customClaims);
-  
-      email.value = '';
-      password.value = '';
-    } catch (error) {
-      console.error('Sign-up error:', error.message);
-    }
-  };
-  
-  
-  
-  // Function to validate email format
-  const validateEmail = (email) => {
-    // Regular expression for basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-  
+  // Define the signUp function
+  // Define the signUp function
+/* const signUp = async (selectedRole) => {
+  try {
+    // Create user with email and password
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
 
+    // Force refresh the user's token to ensure custom claims are updated
+    await user.getIdToken(true);
+
+    // Set custom claims based on the selected role
+    await setCustomUserClaims(auth, user.uid, { admin: selectedRole === 'admin' });
+
+    // Other sign-up logic, if any
+
+    console.log('User signed up successfully:', user.uid);
+  } catch (error) {
+    console.error('Sign-up error:', error.message);
+    // Handle Firebase Authentication errors
+  }
+}; */
+
+
+  // Function to log in the user
   const logIn = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
       const user = userCredential.user;
-
-      // No need to check for admin role here, it should be handled server-side
 
       // Set isLoggedIn to true after successful login
       isLoggedIn.value = true; // Update isLoggedIn value
 
       email.value = '';
       password.value = '';
-      console.log(`User logged in as ${role.value}:`, user.uid);
+      console.log('User logged in:', user.uid);
       // send user to the homepage
       nextTick(() => {
         // Redirect the user to the homepage
         router.push('/');
       });
-
     } catch (error) {
       console.error('Sign-in error:', error.message);
     }
@@ -107,7 +102,7 @@ export function login() {
     logOut,
     email,
     password,
-    signUp,
+    
     logIn,
     isLoggedIn,
   };
