@@ -1,7 +1,6 @@
 // index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import EquipmentView from '../views/EquipmentView.vue';
 import SoMeView from '../views/SoMeView.vue';
 import ProductsView from '../views/ProductsView.vue';
 import { auth } from '../firebase.js';
@@ -71,7 +70,7 @@ const router = createRouter({
       component: ProductsView,
       meta: {
         requiresAuth: true,
-        /*  requiresAdmin: true, */ // Add meta field to specify admin access
+        requiresRole: 'admin', // Specify role required for access
       },
     },
     {
@@ -91,8 +90,8 @@ const router = createRouter({
     },
   ]
 });
+
 router.beforeEach(async (to, from, next) => {
-  // Wait for Firebase authentication state to resolve
   await new Promise(resolve => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       unsubscribe();
@@ -102,51 +101,22 @@ router.beforeEach(async (to, from, next) => {
 
   const user = auth.currentUser;
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
+  const requiredRole = to.meta.requiresRole;
 
-  console.log("User:", user); // Debugging
-
-  // Check if authentication is required for the route
-  if (requiresAuth) {
-    if (!user) {
-      next('/login');
+  if (requiresAuth && !user) {
+    next('/login');
+  } else if (requiresAuth && requiredRole && user) {
+    // Check if the user has the required role
+    if (user.role !== requiredRole) {
+      console.log(`User does not have required role ${requiredRole}. Redirecting to home.`);
+      next('/');
       return;
-    }
-
-    if (requiresAdmin) {
-      try {
-        const isAdminUser = await isAdmin(user);
-
-        if (!isAdminUser) {
-          console.log("Redirecting to home because admin access is required but user does not have admin privileges.");
-          next('/');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking admin privileges:', error);
-        next('/');
-        return;
-      }
     }
   }
 
-
-  // Allow navigation if authentication is successful or not required
-  console.log("Allowing navigation."); // Debugging
   next();
 });
 
-async function isAdmin(user) {
-  try {
-    const tokenResult = await user.getIdTokenResult();
-    // Check if the 'admin' claim exists and is set to true
-    return tokenResult.claims && tokenResult.claims.admin === true;
-  } catch (error) {
-    console.error('Error fetching user token:', error);
-    return false;
-  }
-}
-
-
 
 export default router;
+
