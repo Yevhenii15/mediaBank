@@ -2,6 +2,7 @@
  --><template>
     <div class="font-futura flex justify-center w-[100%]">
         <div class="w-[60%]">
+            <div v-if="isAdminUser"> <!-- Use v-if instead of v-show -->
             <!-- Title for section -->
             <h1 class="w-[100%] text-p text-text flex justify-center my-5">ADD NEW PRODUCT</h1>
             <!-- Form for adding new product -->
@@ -36,6 +37,7 @@
                 <button class="flex w-[40%] justify-center bg-main text-white px-[70px] py-[9px] rounded-lg"
                     @click="firebaseAddSingleItem">Add Product</button>
             </div>
+        </div>
             <!-- Displaying and editing products -->
             <div class="w-[100%] flex flex-wrap my-7">
                 <!-- Looping through all products -->
@@ -43,7 +45,7 @@
                     :key="product.id">
                     <router-link :to="'/product/' + product.id" class="flex flex-col items-center">
                         <div v-for="(image, index) in product.productImages" :key="index">
-                            <img class="w-48 h-48 object-cover object-center rounded-3xl" :src="image"
+                            <img download class="w-48 h-48 object-cover object-center rounded-3xl" :src="image"
                                 alt="Product Image" />
                         </div>
                         <h1 class="text-text text-[17px] uppercase relative top-[-10px] font-bold mb-2">
@@ -57,18 +59,42 @@
     </div>
 </template>
 
+// ProductView.vue
 <script setup>
 import { onMounted } from 'vue';
 import useProducts from '../modules/products.js';
+import isAdmin from '../modules/isAdmin.js'; 
 
 const {
-    products,
-    getProductsData,
-    firebaseAddSingleItem,
-    addProductData,
-    handleImageUpload,
-    handleFileUpload, // Add new function
+  products,
+  getProductsData,
+  firebaseAddSingleItem,
+  addProductData,
+  handleImageUpload,
+  handleFileUpload,
 } = useProducts();
 
-onMounted(getProductsData);
+let isAdminUser = false;
+
+// Assuming you have access to the user ID from somewhere (e.g., via Firebase Auth)
+import { auth } from '../firebase.js'; // Assuming you have a firebase.js file exporting the auth object
+import { onAuthStateChanged } from 'firebase/auth';
+
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid).then((isAdmin) => {
+        isAdminUser = isAdmin;
+        // Once isAdmin is resolved, you can call getProductsData
+        getProductsData();
+      }).catch((error) => {
+        console.error('Error checking admin role:', error);
+      });
+    } else {
+      isAdminUser = false;
+      // Once isAdmin is resolved, you can call getProductsData
+      getProductsData();
+    }
+  });
+});
 </script>

@@ -11,6 +11,7 @@ import ProductDetailes from '@/components/ProductDetailes.vue';
 import OxygenEquipment from '@/views/OxygenEquipment.vue';
 import MicroEquipment from '@/views/MicroEquipment.vue';
 import LedEquipment from '@/views/LedEquipment.vue';
+import isAdmin from '../modules/isAdmin.js'; 
 
 
 const router = createRouter({
@@ -70,7 +71,6 @@ const router = createRouter({
       component: ProductsView,
       meta: {
         requiresAuth: true,
-        requiresRole: 'admin', // Specify role required for access
       },
     },
     {
@@ -84,14 +84,17 @@ const router = createRouter({
       component: AppUsersView,
       meta: {
         requiresAuth: true,
-
-        /*  requiresAdmin: true // Add meta field to specify admin access */
+        requiresAdmin: true,
       },
     },
   ]
 });
 
 router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
+
+  // Wait for authentication state to be resolved
   await new Promise(resolve => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       unsubscribe();
@@ -99,23 +102,33 @@ router.beforeEach(async (to, from, next) => {
     });
   });
 
-  const user = auth.currentUser;
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const requiredRole = to.meta.requiresRole;
+  const currentUser = auth.currentUser;
 
-  if (requiresAuth && !user) {
+  if (requiresAuth && !currentUser) {
+    // User is not authenticated, redirect to login page
     next('/login');
-  } else if (requiresAuth && requiredRole && user) {
-    // Check if the user has the required role
-    if (user.role !== requiredRole) {
-      console.log(`User does not have required role ${requiredRole}. Redirecting to home.`);
-      next('/');
-      return;
+  } else if (requiresAdmin) {
+    // Check if user is authenticated and has admin role
+    if (currentUser) {
+      const isAdminUser = await isAdmin(currentUser.uid); // Use isAdmin function
+      if (isAdminUser) {
+        // User is authenticated and has admin role, allow access
+        next();
+      } else {
+        // User is not authorized, redirect to unauthorized page or home
+        next('/');
+      }
+    } else {
+      // User is not authenticated, redirect to login page
+      next('/login');
     }
+  } else {
+    // No authentication or admin role required, proceed with navigation
+    next();
   }
-
-  next();
 });
+
+
 
 
 export default router;

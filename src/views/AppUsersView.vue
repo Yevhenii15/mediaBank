@@ -1,3 +1,5 @@
+<!-- AppUsersView.vue -->
+
 <template>
   <body class="font-futura flex flex-col items-center w-[100%] my-5">
     <div class="h1text flex justify-start w-[70%]">
@@ -22,50 +24,23 @@
           <input type="radio" value="admin" v-model="selectedRole" /> Admin
         </label>
       </div>
-      <button class="bg-main text-white px-[60px] rounded-2xl" @click="signUp">Save</button>
+      <button class="bg-main text-white px-[60px] rounded-2xl" @click="handleSignUp">Save</button>
     </div>
   </body>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import login from '../modules/login.js'; // Remove curly braces
+const { signUp } = login();
 
-// Data
 const email = ref('');
 const password = ref('');
 const selectedRole = ref('user'); // Default role is user
 
-// Methods
-const signUp = () => {
-  // Validate email and password
-  if (!email.value || !password.value) {
-    alert('Please enter both email and password');
-    return;
-  }
-
-  // Perform signup logic here, for example, send a request to your backend API
-  const userData = {
-    email: email.value,
-    password: password.value,
-    role: selectedRole.value
-  };
-
-  // Assuming you have a function to handle signup in your backend
-  // You need to implement this function in your backend
-  // Example:
-   axios.post('/api/signup', userData)
-     .then(response => {
-       // Handle success
-     })
-    .catch(error => {
-       // Handle error
-     });
-
-  // For this example, just log the user data
-  console.log('Signing up user:', userData);
-
-  // Clear input fields after signup
+const handleSignUp = async () => {
+  await signUp(email.value, password.value, selectedRole.value);
   email.value = '';
   password.value = '';
 };
