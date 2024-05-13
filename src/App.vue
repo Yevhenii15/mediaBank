@@ -1,3 +1,4 @@
+<!-- app.vue --> 
 <template>
   <header v-if="isLoggedIn">
     <div class="wrapper font-futura">
@@ -6,11 +7,12 @@
         <div class="w-[52%] flex items-center">
           <RouterLink to="/"><img src="./images/logo.png" alt="Logo" class=" w-[150px]"></RouterLink>
           <!-- Show the admin link only when user is logged in and is admin -->
-          <div class="navMenus w-[70%] flex justify-between text-text text-h3 ml-[70px]">
+          <div :class="isAdminUser ? 'navbar-admin' : 'navbar-user'"  class="navMenus flex justify-between text-text text-h3 ml-[70px]">
             <RouterLink to="/oxyequipment">EQUIPMENT</RouterLink>
             <RouterLink to="/products">PRODUCTS</RouterLink>
             <RouterLink to="/some">SOME POSTS</RouterLink>
-            <RouterLink to="/app-users">APP USERS</RouterLink>
+            <RouterLink v-if="isAdminUser" to="/app-users">APP USERS</RouterLink>
+            
           </div>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" viewBox="0 0 448 512">
@@ -28,15 +30,57 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import { login } from './modules/login.js';
+import  login  from './modules/login.js';
 const { isLoggedIn } = login();
+import { onMounted, ref } from 'vue'; // Import ref from Vue
 
+import useProducts from './modules/products.js';
+import isAdmin from './modules/isAdmin.js'; 
+
+const {
+
+  getProductsData,
+
+} = useProducts();
+
+// Use ref to make isAdminUser reactive
+const isAdminUser = ref(null);
+
+// Assuming you have access to the user ID from somewhere (e.g., via Firebase Auth)
+import { auth } from './firebase.js'; // Assuming you have a firebase.js file exporting the auth object
+import { onAuthStateChanged } from 'firebase/auth';
+
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid).then((isAdmin) => {
+        // Update isAdminUser value using .value with ref
+        isAdminUser.value = isAdmin;
+        console.log('isAdminUser:', isAdminUser.value);
+        getProductsData(); // Move the call inside the isAdmin check
+      }).catch((error) => {
+        console.error('Error checking admin role:', error);
+      });
+
+    } else {
+      isAdminUser.value = false; // Update isAdminUser value
+      getProductsData();
+    }
+  });
+});
 </script>
+
 
 
 <style scoped>
 nav {
   background: rgb(255, 255, 255);
   background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(93, 137, 179, 1) 100%);
+}
+.navbar-admin {
+  width: 70%;
+}
+.navbar-user {
+  width: 50%;
 }
 </style>
