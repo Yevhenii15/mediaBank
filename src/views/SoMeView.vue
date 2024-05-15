@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center font-futura">
+  <div class="flex flex-col items-center font-futura relative top-[15vh] mb-[15vh]">
     <div v-if="isAdminUser" class="w-[100%] flex items-center flex-col mt-[20px]">
       <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
       <div class="w-[50%] flex justify-between my-[20px]">

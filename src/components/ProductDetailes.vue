@@ -1,5 +1,5 @@
 <template>
-    <div v-if="product" class="w-[100%] px-[5%] flex font-futura mt-10 h-[79vh]">
+    <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10  relative top-[15vh] mb-[20vh]">
         <div class="pictures w-[50%] flex-col flex items-center">
             <!-- Main product image -->
             <div class="relative w-[100%] flex justify-center">

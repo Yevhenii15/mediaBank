@@ -1,7 +1,5 @@
 <template>
-  <div class="flex flex-col justify-center h-[84.2vh]">
-
-
+  <div class="flex flex-col justify-center h-[84.2vh] relative top-[12vh] mb-[12vh]">
     <div class="icons flex justify-around">
       <a href="/oxyequipment"
         class="equipment w-[20%] flex px-[78px] py-5 flex-col border-[1px] border-border rounded-[52px]">
