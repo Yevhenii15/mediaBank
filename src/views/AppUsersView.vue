@@ -2,7 +2,7 @@
 
 <template>
 
-  <body class="font-futura flex flex-col items-center w-[100%] my-5">
+  <body class="font-futura flex flex-col items-center w-[100%] py-5 relative top-[15vh] mb-[15vh]">
     <div class="h1text flex justify-start w-[70%]">
       <h1 class="text-[25px] text-main">User Info:</h1>
     </div>

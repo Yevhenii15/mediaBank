@@ -1,6 +1,15 @@
-<!-- ProductView.vue
- --><template>
-    <div class="font-futura flex justify-center w-[100%]">
+<!-- ProductView.vue -->
+<template>
+    <div class="font-futura flex justify-center w-[100%] relative top-[15vh] mb-[15vh]">
+        <!-- Buttons to filter products -->
+        <div class="flex flex-col w-[11%] fixed left-0">
+                <button @click="filterProducts('all')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'all' }]">All</button>
+                <button @click="filterProducts('face')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'face' }]">Face</button>
+                <button @click="filterProducts('eye')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7  uppercase my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'eye' }]">Eye</button>
+                <button @click="filterProducts('hair')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'hair' }]">Hair</button>
+                <button @click="filterProducts('serum')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum' }]">Serum</button>
+                <button @click="filterProducts('serum-device')" :class="['bg-white flex text-main border border-main rounded-e-3xl uppercase p-2 pl-7 my-3 font-bold border-l-0', {'active-filter': selectedProductType === 'serum-device' }]">Serum Device</button>
+            </div>
         <div class="w-[60%]">
             <div v-if="isAdminUser"> <!-- Use v-if instead of v-show -->
                 <!-- Title for section -->
@@ -23,7 +32,6 @@
                     <input class="w-[48%] border border-main rounded-lg pl-3 pt-1 pb-11 mr-[2%]"
                         v-model="addProductData.productDescription" type="text" placeholder="Product Description">
                     <div class="w-[48%] ml-[2%] flex flex-col justify-between">
-
                         <input
                             class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
                             type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
@@ -31,18 +39,17 @@
                             class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
                             type="file" @change="handleFileUpload($event, null)" multiple :data-product="null">
                     </div>
-
                 </div>
                 <div class="flex justify-center w-[100%]">
                     <button class="flex w-[40%] justify-center bg-main text-white px-[70px] py-[9px] rounded-lg"
                         @click="firebaseAddSingleItem">Add Product</button>
                 </div>
             </div>
+            
             <!-- Displaying and editing products -->
             <div class="w-[100%] flex flex-wrap my-7">
                 <!-- Looping through all products -->
-                <div class="w-[21%] mx-[2%]  border border-main rounded-3xl my-3" v-for="product in products"
-                    :key="product.id">
+                <div class="w-[21%] mx-[2%]  border border-main rounded-3xl my-3" v-for="product in filteredProducts" :key="product.id">
                     <router-link :to="'/product/' + product.id" class="flex flex-col items-center">
                         <div v-if="product.productImages && product.productImages.length > 0">
                             <img download class="w-48 h-48 object-cover object-center rounded-3xl"
@@ -61,7 +68,7 @@
 
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import useProducts from '../modules/products.js';
 import isAdmin from '../modules/isAdmin.js';
 
@@ -74,7 +81,8 @@ const {
     handleFileUpload,
 } = useProducts();
 
-let isAdminUser = false;
+let isAdminUser = ref(false);
+let selectedProductType = ref('all');
 
 // Assuming you have access to the user ID from somewhere (e.g., via Firebase Auth)
 import { auth } from '../firebase.js'; // Assuming you have a firebase.js file exporting the auth object
@@ -84,17 +92,35 @@ onMounted(() => {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             isAdmin(user.uid).then((isAdmin) => {
-                isAdminUser = isAdmin;
+                isAdminUser.value = isAdmin;
                 // Once isAdmin is resolved, you can call getProductsData
                 getProductsData();
             }).catch((error) => {
                 console.error('Error checking admin role:', error);
             });
         } else {
-            isAdminUser = false;
+            isAdminUser.value = false;
             // Once isAdmin is resolved, you can call getProductsData
             getProductsData();
         }
     });
 });
+
+const filterProducts = (type) => {
+    selectedProductType.value = type;
+};
+
+const filteredProducts = computed(() => {
+    if (selectedProductType.value === 'all') {
+        return products.value;
+    }
+    return products.value.filter(product => product.productType === selectedProductType.value);
+});
 </script>
+
+<style scoped>
+.active-filter {
+    background-color: #5d89b3; /* Change to your desired active color */
+    color: white;
+}
+</style>

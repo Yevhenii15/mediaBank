@@ -1,6 +1,6 @@
 <template>
 
-    <body class="font-futura h-[84.2vh]">
+    <body class="font-futura relative top-[15vh] mb-[20vh]">
 
 
         <div>

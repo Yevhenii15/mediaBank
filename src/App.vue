@@ -1,7 +1,7 @@
 <!-- app.vue -->
 <template>
   <header v-if="isLoggedIn">
-    <div class="wrapper font-futura">
+    <div class="wrapper font-futura fixed w-[100%] z-10">
       <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">Media Bank</h1>
       <nav class="p-[15px] flex items-center justify-between px-[30px]">
         <div class="w-[52%] flex items-center">
