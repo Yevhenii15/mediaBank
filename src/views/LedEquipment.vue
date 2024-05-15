@@ -1,6 +1,6 @@
 <template>
 
-    <body class="font-futura">
+    <body class="font-futura h-[84.2vh]">
 
 
         <div>
@@ -17,13 +17,7 @@
 </template>
 
 <script>
-export default {
-    setup() {
 
-
-        return {}
-    }
-}
 </script>
 
 <style lang="scss" scoped></style>

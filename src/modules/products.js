@@ -5,6 +5,7 @@ import { ref } from 'vue';
 import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject, listAll, getMetadata } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
+import { query, orderBy } from 'firebase/firestore';
 
 const useProducts = () => {
   const getProductById = async (productId) => {
@@ -209,7 +210,8 @@ const useProducts = () => {
   const products = ref([]);
   const productDataRef = collection(db, 'products');
   const getProductsData = () => {
-    onSnapshot(productDataRef, (snapshot) => {
+    const productsQuery = query(productDataRef, orderBy('createdAt', 'desc'));
+    onSnapshot(productsQuery, (snapshot) => {
       products.value = snapshot.docs.map((doc) => {
         return {
           id: doc.id,
@@ -247,6 +249,7 @@ const useProducts = () => {
           productType: addProductData.value.productType,
           productFiles: addProductData.value.productFiles, // Include product files
           productImages: addProductData.value.productImages, // Include product images
+          createdAt: new Date(), // Add createdAt timestamp
         };
 
         await addDoc(collection(db, 'products'), productData);
@@ -269,6 +272,7 @@ const useProducts = () => {
           productDescription: addProductData.value.productDescription,
           productType: addProductData.value.productType,
           productImages: addProductData.value.productImages, // Include product images only
+          createdAt: new Date(), // Add createdAt timestamp
         };
 
         await addDoc(collection(db, 'products'), productData);
@@ -285,6 +289,7 @@ const useProducts = () => {
       }
     }
   };
+
 
   // Update a product in Firestore
   const firebaseUpdateSingleItem = async (product, newProductName, newProductDescription) => {

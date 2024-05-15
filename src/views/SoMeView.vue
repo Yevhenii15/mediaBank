@@ -1,9 +1,9 @@
 <template>
-    <div class="flex flex-col items-center font-futura">
-        <div v-if="isAdminUser" class="w-[100%] flex items-center flex-col mt-[20px]">
-            <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
-            <div class="w-[50%] flex justify-between my-[20px]">
-                <input class="file:bg-main w-[50%]  
+  <div class="flex flex-col items-center font-futura">
+    <div v-if="isAdminUser" class="w-[100%] flex items-center flex-col mt-[20px]">
+      <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
+      <div class="w-[50%] flex justify-between my-[20px]">
+        <input class="file:bg-main w-[50%]  
             file:text-white
             file:border-none
             file:px-[40px]
@@ -12,20 +12,23 @@
             file:mr-5
             file:hover:bg-text
             font-futura " type="file" @change="handleImageUpload($event)" multiple :data-product="null">
-                <button class=" hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
-                    Post</button>
-            </div>
-        </div>
-        <div class="w-[60%] my-6 flex flex-row flex-wrap">
+        <button class=" hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
+          Post</button>
+      </div>
+    </div>
+    <div class="w-[60%] my-6 flex flex-row flex-wrap">
       <div class="w-[21%] mx-[2%] flex flex-col" v-for="(imageUrl, index) in imageUrls" :key="index">
-        <img class="w-[100%] h-60 object-cover object-center border border-main rounded-3xl" :src="imageUrl" alt="Image">
-        <div class="flex w-[100%] justify-between">
-          <button class="bg-main text-white px-[12px] py-[0.5px] rounded-md my-3" @click="deleteImageHandler(imageUrl)">Delete</button>
-          <button class="bg-main text-white px-[12px] py-[0.5px] rounded-md my-3" @click="downloadImage(imageUrl)">Download</button> 
+        <img class="w-[100%] h-60 object-cover object-center border border-main rounded-3xl" :src="imageUrl"
+          alt="Image">
+        <div :class="isAdminUser ? 'admin' : 'user'" class="flex w-[100%] mb-10">
+          <button v-if="isAdminUser" class="bg-main text-white px-[12px] py-[0.5px] rounded-md mt-3"
+            @click="deleteImageHandler(imageUrl)">Delete</button>
+          <button :class="isAdminUser ? 'admin-download' : 'user-download'"
+            class="bg-main text-white  py-[0.5px] rounded-md mt-3 " @click="downloadImage(imageUrl)">Download</button>
         </div>
       </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <script setup>
@@ -55,7 +58,7 @@ const reloadPage = () => {
 };
 
 import useProducts from '../modules/products.js';
-import isAdmin from '../modules/isAdmin.js'; 
+import isAdmin from '../modules/isAdmin.js';
 
 const {
   getProductsData,
@@ -86,16 +89,16 @@ const downloadImage = async (imageUrl) => {
   try {
     const imageRef = storageRef(storage, imageUrl); // Get the reference using the initialized storage
     const downloadUrl = await getDownloadURL(imageRef);
-    
+
     // Fetch the image data as a blob
     const response = await fetch(downloadUrl);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch image (${response.status} ${response.statusText})`);
     }
-    
+
     const blob = await response.blob();
-    
+
     // Create a blob URL for the image
     const blobUrl = URL.createObjectURL(blob);
 
@@ -105,10 +108,10 @@ const downloadImage = async (imageUrl) => {
     a.download = imageUrl.split('/').pop(); // Set the filename as the last segment of the URL
     a.style.display = 'none'; // Hide the link
     document.body.appendChild(a);
-    
+
     // Simulate a click event on the link
     a.click();
-    
+
     // Clean up
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
@@ -119,4 +122,22 @@ const downloadImage = async (imageUrl) => {
 
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.admin {
+  justify-content: space-between;
+}
+
+.user {
+  justify-content: center;
+}
+
+.admin-download {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.user-download {
+  padding-left: 25px;
+  padding-right: 25px;
+}
+</style>
