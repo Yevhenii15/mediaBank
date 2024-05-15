@@ -1,4 +1,5 @@
-//login.js
+// login.js
+
 // Import the necessary functions from Firebase Authentication
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -6,9 +7,11 @@ import { signOut } from 'firebase/auth';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { ref, nextTick } from 'vue';
 import router from '../router'; // Import router from your Vue router setup
+import { getFirestore, collection, doc, setDoc } from 'firebase/firestore';
+
 
 // Define the login function
-export function login() {
+export default function login() { // Change the export to default
   const email = ref('');
   const password = ref('');
   const isLoggedIn = ref(false);
@@ -31,30 +34,30 @@ export function login() {
     }
   });
 
-  // Define the signUp function
-  // Define the signUp function
-/* const signUp = async (selectedRole) => {
-  try {
-    // Create user with email and password
-    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-    const user = userCredential.user;
-
-    // Force refresh the user's token to ensure custom claims are updated
-    await user.getIdToken(true);
-
-    // Set custom claims based on the selected role
-    await setCustomUserClaims(auth, user.uid, { admin: selectedRole === 'admin' });
-
-    // Other sign-up logic, if any
-
-    console.log('User signed up successfully:', user.uid);
-  } catch (error) {
-    console.error('Sign-up error:', error.message);
-    // Handle Firebase Authentication errors
-  }
-}; */
-
-
+  const signUp = async (email, password, role) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // Access Firestore directly using firebase.firestore()
+      const firestore = getFirestore();
+      
+      // Reference to the 'users' collection
+      const usersCollection = collection(firestore, 'users');
+  
+      // Set user role in Firestore
+      await setDoc(doc(usersCollection, user.uid), {
+        role: role,
+        // Other user data
+      });
+  
+      // Redirect or other actions after successful signup
+    } catch (error) {
+      console.error('Error signing up:', error);
+      // Handle signup error
+    }
+  };
+  
   // Function to log in the user
   const logIn = async () => {
     try {
@@ -102,7 +105,7 @@ export function login() {
     logOut,
     email,
     password,
-    
+    signUp,
     logIn,
     isLoggedIn,
   };
