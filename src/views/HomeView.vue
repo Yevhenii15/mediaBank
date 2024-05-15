@@ -34,6 +34,6 @@
 
 <script setup>
 
-import { login } from '../modules/login.js';
+import login from '../modules/login.js';
 const { logOut } = login();
 </script>
