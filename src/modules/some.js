@@ -1,5 +1,5 @@
 // SoMe.js
-import { uploadBytes, getDownloadURL,  getStorage, listAll, ref as storageRef, deleteObject } from 'firebase/storage';
+import { uploadBytes, getDownloadURL, getStorage, listAll, ref as storageRef, deleteObject } from 'firebase/storage';
 
 const SoMePost = () => {
 
@@ -14,7 +14,7 @@ const SoMePost = () => {
         try {
             // Upload all the images to Firebase Storage and get their download URLs
             const imagePromises = Array.from(files).map(async (file) => {
-                const imageRef = storageRef(storage, `some/${Date.now()}_${file.name}`);
+                const imageRef = storageRef(storage, `some/${file.name}`);
                 await uploadBytes(imageRef, file); // Use uploadBytes function here
                 return getDownloadURL(imageRef);
             });

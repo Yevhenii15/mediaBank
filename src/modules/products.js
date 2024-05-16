@@ -7,6 +7,8 @@ import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObjec
 import { getDoc } from 'firebase/firestore';
 import { query, orderBy } from 'firebase/firestore';
 
+const storage = getStorage(); // Initialize Firebase Storage
+
 const useProducts = () => {
   const getProductById = async (productId) => {
     try {
@@ -92,23 +94,45 @@ const useProducts = () => {
 
 
   // Function to download files from Firebase Storage
-  const downloadFile = async (fileUrl) => {
+  const downloadFile = async (imageUrl) => {
     try {
-      const storage = getStorage();
-      const fileRef = storageRef(storage, fileUrl);
+      const imageRef = storageRef(storage, imageUrl); // Get the reference using the initialized storage
+      const downloadUrl = await getDownloadURL(imageRef);
 
-      const url = await getDownloadURL(fileRef);
+      // Fetch the image data as a blob
+      const response = await fetch(downloadUrl);
 
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image (${response.status} ${response.statusText})`);
+      }
+
+      const blob = await response.blob();
+
+      // Extract filename without query parameters and duplicate extensions
+      const filenameParts = imageUrl.split('/').pop().split('?')[0].replace('products%2Ffiles%2F', '').split('.');
+      const filename = filenameParts.slice(0, -1).join('.');
+      const extension = filenameParts.pop();
+      const filenameWithExtension = `${filename}.${extension}`;
+
+
+      // Create a blob URL for the image
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a link element
       const a = document.createElement('a');
-      a.href = url;
-      a.download = url.split('/').pop();
+      a.href = blobUrl;
+      a.download = filenameWithExtension; // Set the filename correctly
+      a.style.display = 'none'; // Hide the link
       document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
 
-      console.log('File downloaded successfully!');
+      // Simulate a click event on the link
+      a.click();
+
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error('Error downloading file:', error);
+      console.error('Error downloading image:', error);
     }
   };
 
