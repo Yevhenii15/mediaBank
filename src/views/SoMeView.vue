@@ -12,7 +12,7 @@
             file:mr-5
             file:hover:bg-text
             font-futura " type="file" @change="handleImageUpload($event)" multiple :data-product="null">
-        <button class=" hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
+        <button class="hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
           Post</button>
       </div>
     </div>
@@ -24,7 +24,7 @@
           <button v-if="isAdminUser" class="bg-main text-white px-[12px] py-[0.5px] rounded-md mt-3"
             @click="deleteImageHandler(imageUrl)">Delete</button>
           <button :class="isAdminUser ? 'admin-download' : 'user-download'"
-            class="bg-main text-white  py-[0.5px] rounded-md mt-3 " @click="downloadImage(imageUrl)">Download</button>
+            class="bg-main text-white py-[0.5px] rounded-md mt-3" @click="downloadImage(imageUrl)">Download</button>
         </div>
       </div>
     </div>
@@ -99,13 +99,20 @@ const downloadImage = async (imageUrl) => {
 
     const blob = await response.blob();
 
+    // Extract filename without query parameters and duplicate extensions
+    const filenameParts = imageUrl.split('/').pop().split('?')[0].replace('some%2F', '').split('.');
+    const filename = filenameParts.slice(0, -1).join('.');
+    const extension = filenameParts.pop();
+    const filenameWithExtension = `${filename}.${extension}`;
+
+
     // Create a blob URL for the image
     const blobUrl = URL.createObjectURL(blob);
 
     // Create a link element
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = imageUrl.split('/').pop(); // Set the filename as the last segment of the URL
+    a.download = filenameWithExtension; // Set the filename correctly
     a.style.display = 'none'; // Hide the link
     document.body.appendChild(a);
 
@@ -119,6 +126,7 @@ const downloadImage = async (imageUrl) => {
     console.error('Error downloading image:', error);
   }
 };
+
 
 </script>
 
