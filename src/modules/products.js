@@ -10,6 +10,8 @@ import { query, orderBy } from 'firebase/firestore';
 const storage = getStorage(); // Initialize Firebase Storage
 
 const useProducts = () => {
+  const showUpdatePopup = ref(false); // State to show/hide the update popup
+
   const getProductById = async (productId) => {
     try {
       const docRef = doc(db, 'products', productId);
@@ -336,6 +338,7 @@ const useProducts = () => {
         await updateDoc(doc(db, 'products', product.id), updateData);
 
         console.log('Product updated successfully!');
+        showUpdatePopup.value = true; // Show the popup after successful update
       } catch (error) {
         console.error('Error updating product:', error);
       }
@@ -394,6 +397,7 @@ const useProducts = () => {
     deleteFile,
     handleFileUpload,
     getProductById,
+    showUpdatePopup
   };
 };
 
