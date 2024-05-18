@@ -15,6 +15,7 @@ export default function login() { // Change the export to default
   const email = ref('');
   const password = ref('');
   const isLoggedIn = ref(false);
+  const errorMessage = ref('')
 
   // Get the Auth instance
   const auth = getAuth();
@@ -38,26 +39,27 @@ export default function login() { // Change the export to default
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-  
+
       // Access Firestore directly using firebase.firestore()
       const firestore = getFirestore();
-      
+
       // Reference to the 'users' collection
       const usersCollection = collection(firestore, 'users');
-  
+
       // Set user role in Firestore
       await setDoc(doc(usersCollection, user.uid), {
         role: role,
         // Other user data
       });
-  
+
       // Redirect or other actions after successful signup
     } catch (error) {
+      errorMessage.value = 'Try another email or password!';
       console.error('Error signing up:', error);
       // Handle signup error
     }
   };
-  
+
   // Function to log in the user
   const logIn = async () => {
     try {
@@ -76,6 +78,7 @@ export default function login() { // Change the export to default
         router.push('/');
       });
     } catch (error) {
+      errorMessage.value = 'Incorrect password or email. Please try again.';
       console.error('Sign-in error:', error.message);
     }
   };
@@ -108,5 +111,6 @@ export default function login() { // Change the export to default
     signUp,
     logIn,
     isLoggedIn,
+    errorMessage,
   };
 }

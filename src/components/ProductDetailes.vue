@@ -45,6 +45,14 @@
             <textarea v-if="isAdminUser" class="w-full text-h3 h-28 text-text" v-model="newProductDescription"
                 placeholder="New Product Description"></textarea>
             <h1 v-if="!isAdminUser" class="w-full text-h3 h-28 text-text">{{ newProductDescription }}</h1>
+            <!-- Pop-up window for update confirmation -->
+            <div v-if="showUpdatePopup"
+                class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+                <div class="bg-white p-5 rounded shadow-md flex justify-center items-center gap-10">
+                    <p class="text-h3">Product updated successfully!</p>
+                    <button class=" bg-main text-white px-3 py-1 rounded-lg" @click="closeUpdatePopup">OK</button>
+                </div>
+            </div>
             <div class="flex gap-2 my-5">
                 <button v-if="isAdminUser"
                     class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
@@ -85,7 +93,7 @@ import useProducts from '../modules/products.js';
 const route = useRoute();
 const router = useRouter();
 
-const { getProductById, deleteImage, deleteFile, downloadFile, firebaseUpdateSingleItem, firebaseDeleteSingleItem, handleFileUpload, handleImageUpload } = useProducts();
+const { showUpdatePopup, getProductById, deleteImage, deleteFile, downloadFile, firebaseUpdateSingleItem, firebaseDeleteSingleItem, handleFileUpload, handleImageUpload } = useProducts();
 
 const productId = ref(route.params.id);
 const product = ref(null);
@@ -93,6 +101,7 @@ const product = ref(null);
 const newProductName = ref('');
 const newProductDescription = ref('');
 const selectedImage = ref(null); // Variable to store the index of selected image
+
 
 onMounted(async () => {
     try {
@@ -149,6 +158,11 @@ const deleteProductHandler = async (productId) => {
         console.error('Error deleting product:', error);
     }
 };
+
+const closeUpdatePopup = () => {
+    showUpdatePopup.value = false; // Close the popup
+};
+
 
 import isAdmin from '../modules/isAdmin.js';
 import { auth } from '../firebase.js'; // Assuming you have a firebase.js file exporting the auth object

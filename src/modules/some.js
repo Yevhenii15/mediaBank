@@ -1,24 +1,19 @@
-// SoMe.js
 import { uploadBytes, getDownloadURL, getStorage, listAll, ref as storageRef, deleteObject } from 'firebase/storage';
 
 const SoMePost = () => {
 
     // Function to upload images to Firebase Storage
     const handleImageUpload = async (event) => {
-        // Get the file and storage references
         const storage = getStorage();
         const files = event.target.files;
-        // Check if there are any files
         if (!files.length) return;
 
         try {
-            // Upload all the images to Firebase Storage and get their download URLs
             const imagePromises = Array.from(files).map(async (file) => {
-                const imageRef = storageRef(storage, `some/${file.name}`);
-                await uploadBytes(imageRef, file); // Use uploadBytes function here
+                const imageRef = storageRef(storage, `some/img/${file.name}`);
+                await uploadBytes(imageRef, file);
                 return getDownloadURL(imageRef);
             });
-            // Wait for all the image uploads to complete
             const imageUrls = await Promise.all(imagePromises);
             console.log('Images uploaded to storage:', imageUrls);
         } catch (error) {
@@ -26,43 +21,62 @@ const SoMePost = () => {
         }
     };
 
-    // Function to delete an image from Firebase Storage
-    const deleteImage = async (imageUrl, callback) => {
+    // Function to upload videos to Firebase Storage
+    const handleVideoUpload = async (event) => {
+        const storage = getStorage();
+        const files = event.target.files;
+        if (!files.length) return;
+
         try {
-            // Delete the image from Firestore
-            const storage = getStorage();
-            const imageRef = storageRef(storage, imageUrl);
-
-            // Attempt to delete the image from storage
-            await deleteObject(imageRef);
-
-            console.log('Image deleted from storage!');
-            // Invoke the callback function passed from the Vue component
-            callback(imageUrl);
+            const videoPromises = Array.from(files).map(async (file) => {
+                const videoRef = storageRef(storage, `some/video/${file.name}`);
+                await uploadBytes(videoRef, file);
+                return getDownloadURL(videoRef);
+            });
+            const videoUrls = await Promise.all(videoPromises);
+            console.log('Videos uploaded to storage:', videoUrls);
         } catch (error) {
-            console.error('Error deleting the image:', error);
+            console.error('Error uploading the videos:', error);
         }
     };
 
-
-    // Function to get all images from Firebase Storage in a directory
-    const getImagesFromStorage = async () => {
-        const storage = getStorage();
-        const imagesRef = storageRef(storage, 'some/');
+    // Function to delete media (image or video) from Firebase Storage
+    const deleteMedia = async (mediaUrl, callback) => {
         try {
-            const result = await listAll(imagesRef);
-            const downloadURLs = await Promise.all(result.items.map((item) => getDownloadURL(item)));
-            return downloadURLs;
+            const storage = getStorage();
+            const mediaRef = storageRef(storage, mediaUrl);
+            await deleteObject(mediaRef);
+            console.log('Media deleted from storage!');
+            callback(mediaUrl);
         } catch (error) {
-            console.error('Error getting images from storage:', error);
+            console.error('Error deleting the media:', error);
+        }
+    };
+
+    // Function to get all media from Firebase Storage
+    const getMediaFromStorage = async () => {
+        const storage = getStorage();
+        const imagesRef = storageRef(storage, 'some/img/');
+        const videosRef = storageRef(storage, 'some/video/');
+        try {
+            const [imageResult, videoResult] = await Promise.all([listAll(imagesRef), listAll(videosRef)]);
+            const imageUrls = await Promise.all(imageResult.items.map((item) => getDownloadURL(item)));
+            const videoUrls = await Promise.all(videoResult.items.map((item) => getDownloadURL(item)));
+            return [
+                ...imageUrls.map(url => ({ url, type: 'image' })),
+                ...videoUrls.map(url => ({ url, type: 'video' }))
+            ];
+        } catch (error) {
+            console.error('Error getting media from storage:', error);
             return [];
         }
     };
 
     return {
-        deleteImage,
         handleImageUpload,
-        getImagesFromStorage,
+        handleVideoUpload,
+        deleteMedia,
+        getMediaFromStorage,
     };
 };
 

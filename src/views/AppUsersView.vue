@@ -6,6 +6,10 @@
     <div class="h1text flex justify-start w-[70%]">
       <h1 class="text-[25px] text-main">User Info:</h1>
     </div>
+    <!-- Error message display -->
+    <div v-if="errorMessage" class="w-[70%] mb-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
+      {{ errorMessage }}
+    </div>
     <div class="info flex justify-between w-[70%] mt-3 mb-5">
       <div class="emailcl w-[45%]">
         <h1 class="text-text">Email</h1>
@@ -34,7 +38,7 @@
 <script setup>
 import { ref } from 'vue';
 import login from '../modules/login.js'; // Remove curly braces
-const { signUp } = login();
+const { signUp, errorMessage } = login();
 
 const email = ref('');
 const password = ref('');
