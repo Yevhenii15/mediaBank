@@ -31,13 +31,55 @@ const useEquipment = () => {
     }
     return null;
   };
+  const downloadFile = async (imageUrl) => {
+    try {
+      const imageRef = storageRef(storage, imageUrl); // Get the reference using the initialized storage
+      const downloadUrl = await getDownloadURL(imageRef);
+
+      // Fetch the image data as a blob
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image (${response.status} ${response.statusText})`);
+      }
+
+      const blob = await response.blob();
+
+      // Extract filename without query parameters and duplicate extensions
+      const filenameParts = imageUrl.split('/').pop().split('?')[0].replace('equipment%2F', '').split('.');
+      const filename = filenameParts.slice(0, -1).join('.');
+      const extension = filenameParts.pop();
+      const filenameWithExtension = `${filename}.${extension}`;
+
+
+      // Create a blob URL for the image
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a link element
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filenameWithExtension; // Set the filename correctly
+      a.style.display = 'none'; // Hide the link
+      document.body.appendChild(a);
+
+      // Simulate a click event on the link
+      a.click();
+
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
+  };
 
   const handleFileUpload = async (event, equipment) => {
     const files = event.target.files;
     if (!files) return;
 
     const promises = Array.from(files).map(async (file) => {
-      const storageReference = storageRef(storage, `equipment/${equipment ? equipment.id : 'new'}/${file.name}`);
+      const folderName = equipment ? equipment.equipmentName.replace(/\s+/g, '_') : 'new';
+      const storageReference = storageRef(storage, `equipment/${folderName}/files/${file.name}`);
       const snapshot = await uploadBytes(storageReference, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -57,23 +99,13 @@ const useEquipment = () => {
     await Promise.all(promises);
   };
 
-  const deleteFile = async (equipment, index) => {
-    const fileUrl = equipment.equipmentFiles[index];
-    const storageReference = storageRef(storage, fileUrl);
-
-    await deleteObject(storageReference);
-    equipment.equipmentFiles.splice(index, 1);
-    await updateDoc(doc(db, 'equipment', equipment.id), {
-      equipmentFiles: equipment.equipmentFiles,
-    });
-  };
-
   const handleImageUpload = async (event, equipment) => {
     const images = event.target.files;
     if (!images) return;
 
     const promises = Array.from(images).map(async (image) => {
-      const storageReference = storageRef(storage, `equipment/${equipment ? equipment.id : 'new'}/${image.name}`);
+      const folderName = equipment ? equipment.equipmentName.replace(/\s+/g, '_') : 'new';
+      const storageReference = storageRef(storage, `equipment/${folderName}/images/${image.name}`);
       const snapshot = await uploadBytes(storageReference, image);
       const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -92,6 +124,20 @@ const useEquipment = () => {
 
     await Promise.all(promises);
   };
+
+
+  const deleteFile = async (equipment, index) => {
+    const fileUrl = equipment.equipmentFiles[index];
+    const storageReference = storageRef(storage, fileUrl);
+
+    await deleteObject(storageReference);
+    equipment.equipmentFiles.splice(index, 1);
+    await updateDoc(doc(db, 'equipment', equipment.id), {
+      equipmentFiles: equipment.equipmentFiles,
+    });
+  };
+
+
 
   const deleteImage = async (equipment, index) => {
     const imageUrl = equipment.equipmentImages[index];
@@ -119,58 +165,6 @@ const useEquipment = () => {
     });
   };
 
-  const firebaseAddSingleItem = async () => {
-    await addDoc(collection(db, 'equipment'), {
-      equipmentName: addEquipmentData.value.equipmentName,
-      equipmentType: addEquipmentData.value.equipmentType,
-      equipmentDescription: addEquipmentData.value.equipmentDescription,
-      equipmentImages: addEquipmentData.value.equipmentImages,
-      equipmentFiles: addEquipmentData.value.equipmentFiles,
-      createdAt: new Date(),
-    });
-
-    addEquipmentData.value = {
-      equipmentName: '',
-      equipmentType: '',
-      equipmentDescription: '',
-      equipmentImages: [],
-      equipmentFiles: [],
-    };
-  };
-
-  const firebaseUpdateSingleItem = async (equipment, newEquipmentName, newEquipmentDescription) => {
-    await updateDoc(doc(db, 'equipment', equipment.id), {
-      equipmentName: newEquipmentName,
-      equipmentDescription: newEquipmentDescription,
-    });
-  };
-
-  const firebaseDeleteSingleItem = async (id) => {
-    const equipment = await getEquipmentById(id);
-    
-    if (equipment) {
-      // Delete all files from storage
-      if (equipment.equipmentFiles) {
-        const fileDeletionPromises = equipment.equipmentFiles.map(async (file) => {
-          const storageReference = storageRef(storage, file);
-          await deleteObject(storageReference);
-        });
-        await Promise.all(fileDeletionPromises);
-      }
-  
-      // Delete all images from storage
-      if (equipment.equipmentImages) {
-        const imageDeletionPromises = equipment.equipmentImages.map(async (image) => {
-          const storageReference = storageRef(storage, image);
-          await deleteObject(storageReference);
-        });
-        await Promise.all(imageDeletionPromises);
-      }
-      
-      // Finally, delete the equipment document
-      await deleteDoc(doc(db, 'equipment', id));
-    }
-  };
 
   const getAllEquipment = async () => {
     const equipmentList = [];
@@ -189,13 +183,11 @@ const useEquipment = () => {
     deleteFile,
     handleImageUpload,
     deleteImage,
-    firebaseAddSingleItem,
-    firebaseUpdateSingleItem,
-    firebaseDeleteSingleItem,
     getEquipmentData,
     getEquipmentById,
     updateEquipmentInFirestore,
-    getAllEquipment
+    getAllEquipment,
+    downloadFile,
   };
 };
 
