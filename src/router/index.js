@@ -12,6 +12,7 @@ import OxygenEquipment from '@/views/OxygenEquipment.vue';
 import MicroEquipment from '@/views/MicroEquipment.vue';
 import LedEquipment from '@/views/LedEquipment.vue';
 import isAdmin from '../modules/isAdmin.js'; 
+import EquipmentDetailes from '@/views/EquipmentDetails.vue';
 
 
 const router = createRouter({
@@ -77,6 +78,15 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginForm,
+    },
+  
+    {
+      path: '/equipment/:id',
+      name: 'equipment-detailes',
+      component: EquipmentDetailes,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/app-users',

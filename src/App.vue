@@ -9,7 +9,7 @@
           <!-- Show the admin link only when user is logged in and is admin -->
           <div :class="isAdminUser ? 'navbar-admin' : 'navbar-user'"
             class="navMenus flex justify-between text-text text-h3 ml-[70px]">
-            <RouterLink to="/oxyequipment">EQUIPMENT</RouterLink>
+            <RouterLink to="">EQUIPMENT</RouterLink>
             <RouterLink to="/products">PRODUCTS</RouterLink>
             <RouterLink to="/some">SOME POSTS</RouterLink>
             <RouterLink v-if="isAdminUser" to="/app-users">APP USERS</RouterLink>
