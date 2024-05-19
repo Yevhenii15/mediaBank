@@ -1,3 +1,4 @@
+<!-- ProductDetailes.vue -->
 <template>
     <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10  relative top-[15vh] mb-[20vh]">
         <div class="pictures w-[50%] flex-col flex items-center">
@@ -87,100 +88,74 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import useProducts from '../modules/products.js';
-
-const route = useRoute();
-const router = useRouter();
-
-const { showUpdatePopup, getProductById, deleteImage, deleteFile, downloadFile, firebaseUpdateSingleItem, firebaseDeleteSingleItem, handleFileUpload, handleImageUpload } = useProducts();
-
-const productId = ref(route.params.id);
-const product = ref(null);
-
-const newProductName = ref('');
-const newProductDescription = ref('');
-const selectedImage = ref(null); // Variable to store the index of selected image
-
-
-onMounted(async () => {
-    try {
-        const result = await getProductById(productId.value);
-        product.value = result;
-        newProductName.value = result.productName;
-        newProductDescription.value = result.productDescription;
-    } catch (error) {
-        console.error('Error fetching product:', error);
-    }
-});
-
-const openFileInput = () => {
-    document.getElementById('file').click();
-};
-
-const toggleDeleteButton = (index) => {
-    // Toggle the selectedImage to show or hide the delete button
-    selectedImage.value = selectedImage.value === index ? null : index;
-};
-
-const getFileName = (fileUrl) => {
-    // Decode the URL
-    const decodedUrl = decodeURIComponent(fileUrl);
-    // Split the decoded URL by '/' and get the last element
-    const parts = decodedUrl.split('/');
-    // Get the last part of the URL
-    const fileNameWithExtension = parts[parts.length - 1];
-    // Split the filename by '.' and get the first part (filename without extension)
-    const fileName = fileNameWithExtension.split('.')[0];
-    return fileName;
-};
-
-const deleteImageHandler = async (product, index) => {
-    console.log('Product object:', product); // Log the product object
-    if (product && product.id) {
-        try {
-            await deleteImage(product, index); // Call deleteImage with the product and index
-            // Reset selectedImage to null to hide the delete button
-            selectedImage.value = null;
-        } catch (error) {
-            console.error('Error deleting image:', error);
-        }
-    } else {
-        console.error('Product ID is missing.');
-    }
-};
-
-const deleteProductHandler = async (productId) => {
-    try {
-        await firebaseDeleteSingleItem(productId, product.value);
-        router.push('/products'); // Redirect to Products page after deletion
-    } catch (error) {
-        console.error('Error deleting product:', error);
-    }
-};
-
-const closeUpdatePopup = () => {
-    showUpdatePopup.value = false; // Close the popup
-};
-
-
+import { useRoute } from 'vue-router';
+import useEquipment from '../modules/equipment.js';
 import isAdmin from '../modules/isAdmin.js';
-import { auth } from '../firebase.js'; // Assuming you have a firebase.js file exporting the auth object
+import { auth } from '../firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 
+const { getEquipmentById, handleImageUpload, deleteImage, handleFileUpload, deleteFile, updateEquipmentInFirestore, firebaseDeleteSingleItem } = useEquipment();
+
+const route = useRoute();
+const equipmentId = route.params.id;
+const equipment = ref(null);
 const isAdminUser = ref(false);
+const selectedImage = ref(null);
+
+const newEquipmentName = ref('');
+const newEquipmentDescription = ref('');
 
 onMounted(() => {
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            isAdmin(user.uid).then((isAdmin) => {
-                isAdminUser.value = isAdmin;
-            }).catch((error) => {
-                console.error('Error checking admin role:', error);
-            });
-        } else {
-            isAdminUser.value = false;
-        }
-    });
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid).then((isAdmin) => {
+        isAdminUser.value = isAdmin;
+      }).catch((error) => {
+        console.error('Error checking admin role:', error);
+      });
+    }
+  });
+  
+  getEquipmentById(equipmentId).then((fetchedEquipment) => {
+    equipment.value = fetchedEquipment;
+    newEquipmentName.value = fetchedEquipment.equipmentName;
+    newEquipmentDescription.value = fetchedEquipment.equipmentDescription;
+  });
 });
+
+const toggleDeleteButton = (index) => {
+  if (selectedImage.value === index) {
+    selectedImage.value = null;
+  } else {
+    selectedImage.value = index;
+  }
+};
+
+const deleteImageHandler = (equipment, selectedImage) => {
+  deleteImage(equipment, selectedImage);
+};
+
+const deleteFileHandler = (equipment, index) => {
+  deleteFile(equipment, index);
+};
+
+const updateEquipment = () => {
+  equipment.value.equipmentName = newEquipmentName.value;
+  equipment.value.equipmentDescription = newEquipmentDescription.value;
+  updateEquipmentInFirestore(equipment.value);
+};
+
+const deleteEquipmentHandler = async (id) => {
+  try {
+    await firebaseDeleteSingleItem(id);
+    // Redirect or update UI after successful deletion
+  } catch (error) {
+    console.error('Error deleting equipment:', error);
+  }
+};
+
+const openFileInput = () => {
+  document.getElementById('file').click();
+};
 </script>
+
