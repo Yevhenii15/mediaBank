@@ -1,36 +1,23 @@
-// login.js
-
-// Import the necessary functions from Firebase Authentication
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { onAuthStateChanged } from 'firebase/auth';
-import { signOut } from 'firebase/auth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { ref, nextTick } from 'vue';
-import router from '../router'; // Import router from your Vue router setup
-import { getFirestore, collection, doc, setDoc } from 'firebase/firestore';
+import router from '../router';
+import { getFirestore, collection, doc, setDoc, getDocs } from 'firebase/firestore';
 
-
-// Define the login function
-export default function login() { // Change the export to default
+export default function login() {
   const email = ref('');
   const password = ref('');
   const isLoggedIn = ref(false);
-  const errorMessage = ref('')
+  const errorMessage = ref('');
 
-  // Get the Auth instance
   const auth = getAuth();
+  const firestore = getFirestore();
 
-  // Listen for changes to the user's authentication state
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User is signed in, you can access the custom claims here
       console.log('User:', user);
-      // Update isLoggedIn to true when user is logged in
       isLoggedIn.value = true;
     } else {
-      // No user is signed in
       console.log('No user signed in.');
-      // Update isLoggedIn to false when user is logged out
       isLoggedIn.value = false;
     }
   });
@@ -40,27 +27,19 @@ export default function login() { // Change the export to default
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Access Firestore directly using firebase.firestore()
-      const firestore = getFirestore();
-
-      // Reference to the 'users' collection
       const usersCollection = collection(firestore, 'users');
 
-      // Set user role in Firestore
       await setDoc(doc(usersCollection, user.uid), {
+        email: user.email,
         role: role,
-        // Other user data
       });
 
-      // Redirect or other actions after successful signup
+      console.log('User signed up and data stored in Firestore');
     } catch (error) {
       errorMessage.value = 'Try another email or password!';
       console.error('Error signing up:', error);
-      // Handle signup error
     }
   };
-
-  // Function to log in the user
   const logIn = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
@@ -103,13 +82,28 @@ export default function login() { // Change the export to default
     }
   };
 
-  // Return the reactive variables and functions for use in the Vue component
+  const fetchAllUsers = async () => {
+    try {
+      const usersCollection = collection(firestore, 'users');
+      const userDocs = await getDocs(usersCollection);
+      const users = [];
+      userDocs.forEach((doc) => {
+        users.push(doc.data());
+      });
+      return users;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw new Error('Error fetching users');
+    }
+  };
+
   return {
-    logOut,
-    email,
-    password,
     signUp,
     logIn,
+    logOut,
+    fetchAllUsers,
+    email,
+    password,
     isLoggedIn,
     errorMessage,
   };

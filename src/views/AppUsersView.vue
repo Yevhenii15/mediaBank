@@ -1,7 +1,4 @@
-<!-- AppUsersView.vue -->
-
 <template>
-
   <body class="font-futura flex flex-col items-center w-[100%] py-5 relative top-[15vh] mb-[15vh]">
     <div class="h1text flex justify-start w-[70%]">
       <h1 class="text-[25px] text-main">User Info:</h1>
@@ -31,22 +28,63 @@
       </div>
       <button class="bg-main text-white px-[60px] rounded-2xl" @click="handleSignUp">Save</button>
     </div>
+
+     <!-- Display users -->
+<div class="w-[70%] mt-5">
+  <h2 class="text-[20px] text-main mb-4">All Users:</h2>
+  <div class="flex flex-col bg-white">
+    <div class="flex py-2 border-b border-main font-bold justify-between">
+      <div class="w-1/3 pl-4">Email</div> <!-- Adjusted alignment -->
+      <div class="w-1/3 flex">
+        <div class="w-1/2 justify-end flex pr-4">User</div> <!-- Justify between -->
+        <div class="w-1/2 justify-end flex pr-4">Admin</div> <!-- Justify end -->
+      </div>
+    </div>
+    <div v-for="user in users" :key="user.email" class="flex justify-between py-2 border-b">
+      <div class="w-1/3 pl-4">{{ user.email }}</div> <!-- Adjusted alignment -->
+      <div class="flex w-1/3 ">
+        <div class="w-1/2 flex justify-end pr-7 ">
+        <input class="new" type="checkbox" disabled :checked="user.role === 'user'" />
+      </div>
+      <div class="w-1/2 flex justify-end pr-8">
+        <input type="checkbox" disabled :checked="user.role === 'admin'" />
+      </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
   </body>
 </template>
 
-
 <script setup>
-import { ref } from 'vue';
-import login from '../modules/login.js'; // Remove curly braces
-const { signUp, errorMessage } = login();
+import { ref, onMounted } from 'vue';
+import login from '../modules/login.js';
+
+const { signUp, errorMessage, fetchAllUsers } = login();
 
 const email = ref('');
 const password = ref('');
 const selectedRole = ref('user'); // Default role is user
+const users = ref([]);
 
 const handleSignUp = async () => {
   await signUp(email.value, password.value, selectedRole.value);
   email.value = '';
   password.value = '';
+  loadUsers(); // Reload users after signup
 };
+
+const loadUsers = async () => {
+  try {
+    users.value = await fetchAllUsers();
+  } catch (error) {
+    console.error('Failed to load users:', error);
+  }
+};
+
+onMounted(() => {
+  loadUsers(); // Load users on component mount
+});
 </script>
