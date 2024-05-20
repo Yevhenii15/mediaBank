@@ -45,12 +45,12 @@ const useEquipment = () => {
 
       const blob = await response.blob();
 
-      // Extract filename without query parameters and duplicate extensions
-      const filenameParts = imageUrl.split('/').pop().split('?')[0].replace('equipment%2F', '').split('.');
+      // Define a regular expression to match and remove the prefixes
+      const prefixPattern = /equipment%2F(?:Oxygen%2Ffiles%2F|Led%2Ffiles%2F|Micro%2Ffiles%2F|Oxygen%2Fimages%2F|Led%2Fimages%2F|Micro%2Fimages%2F)/i;
+      const filenameParts = imageUrl.split('/').pop().split('?')[0].replace(prefixPattern, '').split('.');
       const filename = filenameParts.slice(0, -1).join('.');
       const extension = filenameParts.pop();
       const filenameWithExtension = `${filename}.${extension}`;
-
 
       // Create a blob URL for the image
       const blobUrl = URL.createObjectURL(blob);
@@ -72,6 +72,7 @@ const useEquipment = () => {
       console.error('Error downloading image:', error);
     }
   };
+
 
   const handleFileUpload = async (event, equipment) => {
     const files = event.target.files;

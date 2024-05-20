@@ -1,7 +1,8 @@
 <template>
+
   <body class="font-futura flex flex-col items-center w-[100%] py-5 relative top-[15vh] mb-[15vh]">
     <div class="h1text flex justify-start w-[70%]">
-      <h1 class="text-[25px] text-main">User Info:</h1>
+      <h1 class="text-[25px] text-main">Add New User:</h1>
     </div>
     <!-- Error message display -->
     <div v-if="errorMessage" class="w-[70%] mb-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
@@ -29,32 +30,30 @@
       <button class="bg-main text-white px-[60px] rounded-2xl" @click="handleSignUp">Save</button>
     </div>
 
-     <!-- Display users -->
-<div class="w-[70%] mt-5">
-  <h2 class="text-[20px] text-main mb-4">All Users:</h2>
-  <div class="flex flex-col bg-white">
-    <div class="flex py-2 border-b border-main font-bold justify-between">
-      <div class="w-1/3 pl-4">Email</div> <!-- Adjusted alignment -->
-      <div class="w-1/3 flex">
-        <div class="w-1/2 justify-end flex pr-4">User</div> <!-- Justify between -->
-        <div class="w-1/2 justify-end flex pr-4">Admin</div> <!-- Justify end -->
+    <!-- Display users -->
+    <div class="w-[70%] mt-5">
+      <h2 class="text-[25px] text-main mb-4">All Users:</h2>
+      <div class="flex flex-col bg-white">
+        <div class="flex py-2 border-b border-main font-bold justify-between">
+          <div class="w-1/3 pl-4">Email</div> <!-- Adjusted alignment -->
+          <div class="w-1/3 flex">
+            <div class="w-1/2 justify-end flex pr-6">User</div> <!-- Justify between -->
+            <div class="w-1/2 justify-end flex pr-5">Admin</div> <!-- Justify end -->
+          </div>
+        </div>
+        <div v-for="user in users" :key="user.email" class="flex justify-between py-2 border-b">
+          <div class="w-1/3 pl-4">{{ user.email }}</div> <!-- Adjusted alignment -->
+          <div class="flex w-1/3 ">
+            <div class="w-1/2 flex justify-end pr-7 ">
+              <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'user'" />
+            </div>
+            <div class="w-1/2 flex justify-end pr-8">
+              <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'admin'" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div v-for="user in users" :key="user.email" class="flex justify-between py-2 border-b">
-      <div class="w-1/3 pl-4">{{ user.email }}</div> <!-- Adjusted alignment -->
-      <div class="flex w-1/3 ">
-        <div class="w-1/2 flex justify-end pr-7 ">
-        <input class="new" type="checkbox" disabled :checked="user.role === 'user'" />
-      </div>
-      <div class="w-1/2 flex justify-end pr-8">
-        <input type="checkbox" disabled :checked="user.role === 'admin'" />
-      </div>
-      </div>
-      
-    </div>
-  </div>
-</div>
-
   </body>
 </template>
 
@@ -88,3 +87,38 @@ onMounted(() => {
   loadUsers(); // Load users on component mount
 });
 </script>
+
+<style scoped>
+.checkbox-blue {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.checkbox-blue:checked {
+  background-color: #5d89b3;
+  /* DodgerBlue color */
+  border-color: #5d89b3;
+}
+
+.checkbox-blue:checked::before {
+  content: '✔';
+  display: block;
+  text-align: center;
+  color: white;
+  font-size: 14px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  line-height: 20px;
+}
+</style>
