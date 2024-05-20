@@ -1,19 +1,17 @@
-<!-- app.vue -->
 <template>
   <header v-if="isLoggedIn">
     <div class="wrapper font-futura fixed w-[100%] z-10">
       <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">Media Bank</h1>
       <nav class="p-[15px] flex items-center justify-between px-[30px]">
         <div class="w-[52%] flex items-center">
-          <RouterLink to="/"><img src="./images/logo.png" alt="Logo" class=" w-[150px]"></RouterLink>
-          <!-- Show the admin link only when user is logged in and is admin -->
+          <RouterLink to="/"><img src="./images/logo.png" alt="Logo" class="w-[150px]"></RouterLink>
+          <!-- Dynamic Navbar Links -->
           <div :class="isAdminUser ? 'navbar-admin' : 'navbar-user'"
             class="navMenus flex justify-between text-text text-h3 ml-[70px]">
-            <RouterLink to="/equipment/adLMVWDTi6YtUrUsgOF7">EQUIPMENT</RouterLink>
-            <RouterLink to="/products">PRODUCTS</RouterLink>
-            <RouterLink to="/some">SOME POSTS</RouterLink>
-            <RouterLink v-if="isAdminUser" to="/app-users">APP USERS</RouterLink>
-
+            <RouterLink v-for="link in filteredLinks" :key="link.to" :to="link.to"
+              :class="{ active: isActive(link.to) }">
+              {{ link.name }}
+            </RouterLink>
           </div>
         </div>
         <div class="relative inline-block dropdown">
@@ -36,50 +34,53 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
-const { isLoggedIn } = login();
-import { onMounted, ref } from 'vue'; // Import ref from Vue
-
+import { RouterLink, RouterView, useRoute } from 'vue-router';
+import { ref, onMounted, computed } from 'vue';
+import login from './modules/login.js';
 import useProducts from './modules/products.js';
 import isAdmin from './modules/isAdmin.js';
-
-const {
-
-  getProductsData,
-
-} = useProducts();
-
-// Use ref to make isAdminUser reactive
-const isAdminUser = ref(null);
-
-// Assuming you have access to the user ID from somewhere (e.g., via Firebase Auth)
-import { auth } from './firebase.js'; // Assuming you have a firebase.js file exporting the auth object
+import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import login from './modules/login.js';
 
-const { logOut } = login();
+const { isLoggedIn, logOut } = login();
+const { getProductsData } = useProducts();
+const isAdminUser = ref(false);
+
+const route = useRoute();
+
+const links = [
+  { name: 'EQUIPMENT', to: '/equipment/4q14YRVaI3XFGN2Wvm5Y' },
+  { name: 'PRODUCTS', to: '/products' },
+  { name: 'SOME POSTS', to: '/some' },
+  { name: 'APP USERS', to: '/app-users', adminOnly: true },
+];
+
+// Filtered links based on admin status
+const filteredLinks = computed(() => {
+  return links.filter(link => !link.adminOnly || isAdminUser.value);
+});
+
+// Check if link is active based on current route
+const isActive = (linkTo) => {
+  return route.path.startsWith(linkTo);
+};
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isAdmin(user.uid).then((isAdmin) => {
-        // Update isAdminUser value using .value with ref
         isAdminUser.value = isAdmin;
-        console.log('isAdminUser:', isAdminUser.value);
-        getProductsData(); // Move the call inside the isAdmin check
+        getProductsData();
       }).catch((error) => {
         console.error('Error checking admin role:', error);
       });
-
     } else {
-      isAdminUser.value = false; // Update isAdminUser value
+      isAdminUser.value = false;
       getProductsData();
     }
   });
 });
 </script>
-
-
 
 <style scoped>
 nav {
@@ -92,10 +93,20 @@ nav {
 }
 
 .navbar-user {
-  width: 50%;
+  width: 60%;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
+}
+
+.navMenus a {
+  color: #000;
+  text-decoration: none;
+  padding: 10px;
+}
+
+.navMenus a.active {
+  color: #5d88b3;
 }
 </style>
