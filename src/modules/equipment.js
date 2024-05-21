@@ -1,3 +1,4 @@
+/* equipment.js */
 import { ref } from 'vue';
 import { db } from '../firebase.js';
 import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, getDoc, query, orderBy, getDocs } from 'firebase/firestore'; // Added getDocs
@@ -15,6 +16,9 @@ const useEquipment = () => {
     equipmentImages: [],
     equipmentFiles: [],
   });
+  const selectedLanguage = ref(''); // Make sure this is defined
+  const errorMessage = ref(''); // Add error message reactive variable
+
 
   const getEquipmentById = async (equipmentId) => {
     const docRef = doc(db, 'equipment', equipmentId);
@@ -76,7 +80,12 @@ const useEquipment = () => {
 
   const handleFileUpload = async (event, equipment) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!selectedLanguage.value) {
+      errorMessage.value = 'Please select a language before uploading a file.';
+      return;
+    }
+
+    errorMessage.value = ''; // Clear the error message if everything is fine
 
     const promises = Array.from(files).map(async (file) => {
       const folderName = equipment ? equipment.equipmentName.replace(/\s+/g, '_') : 'new';
@@ -84,21 +93,28 @@ const useEquipment = () => {
       const snapshot = await uploadBytes(storageReference, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
 
+      const fileData = {
+        url: downloadURL,
+        language: selectedLanguage.value
+      };
+
       if (equipment) {
         if (!equipment.equipmentFiles) {
           equipment.equipmentFiles = [];
         }
-        equipment.equipmentFiles.push(downloadURL);
+        equipment.equipmentFiles.push(fileData);
         await updateDoc(doc(db, 'equipment', equipment.id), {
           equipmentFiles: equipment.equipmentFiles,
         });
       } else {
-        addEquipmentData.value.equipmentFiles.push(downloadURL);
+        addEquipmentData.value.equipmentFiles.push(fileData);
       }
     });
 
     await Promise.all(promises);
   };
+  
+  
 
   const handleImageUpload = async (event, equipment) => {
     const images = event.target.files;
@@ -128,16 +144,39 @@ const useEquipment = () => {
 
 
   const deleteFile = async (equipment, index) => {
-    const fileUrl = equipment.equipmentFiles[index];
-    const storageReference = storageRef(storage, fileUrl);
-
-    await deleteObject(storageReference);
-    equipment.equipmentFiles.splice(index, 1);
-    await updateDoc(doc(db, 'equipment', equipment.id), {
-      equipmentFiles: equipment.equipmentFiles,
-    });
+    try {
+      // Check if the file exists in the array
+      if (!equipment.equipmentFiles || !equipment.equipmentFiles[index]) {
+        throw new Error('File not found in equipment files array.');
+      }
+  
+      const fileUrl = equipment.equipmentFiles[index].url; // Ensure this is correct
+      console.log('Deleting file with URL:', fileUrl);
+  
+      // Validate that fileUrl is a string
+      if (typeof fileUrl !== 'string') {
+        throw new TypeError('File URL is not a string.');
+      }
+  
+      // Create storage reference
+      const storageReference = storageRef(storage, fileUrl);
+      console.log('Storage reference created:', storageReference);
+  
+      // Delete the file from Firebase Storage
+      await deleteObject(storageReference);
+      console.log('File deleted successfully from storage.');
+  
+      // Remove the file from the equipment files array
+      equipment.equipmentFiles.splice(index, 1);
+      await updateDoc(doc(db, 'equipment', equipment.id), {
+        equipmentFiles: equipment.equipmentFiles,
+      });
+      console.log('File entry removed from Firestore.');
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
   };
-
+  
 
 
   const deleteImage = async (equipment, index) => {
@@ -189,6 +228,8 @@ const useEquipment = () => {
     updateEquipmentInFirestore,
     getAllEquipment,
     downloadFile,
+    selectedLanguage, // Make sure this is included if needed in other parts
+    errorMessage
   };
 };
 

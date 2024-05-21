@@ -1,3 +1,4 @@
+<!-- ProductDetails.vue  -->
 <template>
   <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10  relative top-[15vh] mb-[20vh]">
     <div class="pictures w-[50%] flex-col flex items-center">
