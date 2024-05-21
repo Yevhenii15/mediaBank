@@ -1,6 +1,5 @@
-<!-- ProductDetails.vue  -->
 <template>
-  <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10  relative top-[15vh] mb-[20vh]">
+  <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10 relative top-[15vh] mb-[20vh]">
     <div class="pictures w-[50%] flex-col flex items-center">
       <!-- Main product image -->
       <div class="relative w-[100%] flex justify-center">
@@ -11,10 +10,9 @@
       <!-- Additional product images -->
       <div class="w-96">
         <div class="w-[103%] gap-[3%] flex flex-wrap">
-          <div v-for="(image, index) in product.productImages.slice(1)" :key="index" class="relative  w-[22%] mt-5">
+          <div v-for="(image, index) in product.productImages.slice(1)" :key="index" class="relative w-[22%] mt-5">
             <img class="border w-[100%] h-24 border-main object-cover object-center cursor-pointer" :src="image"
               alt="Product Image" @click="toggleDeleteButton(index + 1)" />
-            <!-- Delete button for additional images -->
           </div>
         </div>
       </div>
@@ -22,11 +20,11 @@
       <!-- Button to add more images -->
       <div class="w-96 mt-5 flex">
         <div v-if="isAdminUser">
-          <input class="hidden" type="file" id="file" name="file" @change="handleImageUpload($event, product)" multiple
-            :data-product="product.id">
+          <input class="hidden" type="file" id="imageInput" name="file" @change="handleImageUpload($event, product)"
+            multiple :data-product="product.id" />
           <button
             class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
-            @click="openFileInput">Add Photo</button>
+            @click="openFileInput('imageInput')">Add Photo</button>
         </div>
 
         <!-- Delete button for the selected image -->
@@ -38,88 +36,158 @@
     </div>
 
     <div class="info w-[50%] flex flex-col">
-      <input v-if="isAdminUser" class="w-[100%] uppercase text-[50px] text-text" v-model="newProductName" type="text"
-        placeholder="New Product Name">
-      <h1 v-if="!isAdminUser" class="w-[100%] uppercase text-[50px] text-text">{{ newProductName }}</h1>
+      <h1 class="w-[100%] uppercase text-[50px] text-text">{{ newProductName }}</h1>
       <h1 class="text-text uppercase my-3 text-p">Description</h1>
-      <textarea v-if="isAdminUser" class="w-full text-h3 h-28 text-text" v-model="newProductDescription"
-        placeholder="New Product Description"></textarea>
-      <h1 v-if="!isAdminUser" class="w-full text-h3 h-28 text-text">{{ newProductDescription }}</h1>
-      <!-- Pop-up window for update confirmation -->
-      <div v-if="showUpdatePopup"
-        class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-5 rounded shadow-md flex justify-center items-center gap-10">
-          <p class="text-h3">Product updated successfully!</p>
-          <button class=" bg-main text-white px-3 py-1 rounded-lg" @click="closeUpdatePopup">OK</button>
-        </div>
-      </div>
-      <div class="flex gap-2 my-5">
-        <button v-if="isAdminUser"
-          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
-          @click="firebaseUpdateSingleItem(product, newProductName, newProductDescription)">Update
-          Product</button>
-        <button v-if="isAdminUser"
-          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
-          @click="deleteProductHandler(product.id)">Delete Product</button>
-      </div>
+      <p class="w-[100%]">{{ newProductDescription }}</p>
 
-      <h1 class="text-p text-text">Files:</h1>
-      <div class="flex w-[100%] justify-between" v-for="(file, index) in product.productFiles" :key="index">
-        <a class="my-1" :href="file" target="_blank">{{ getFileName(file) }}</a>
-        <div class="my-1">
-          <button v-if="isAdminUser" class="text-text underline px-[20px] rounded-lg mr-5"
-            @click="deleteFile(product, index)">Delete File</button>
-          <button class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
-            @click="downloadFile(file)">Download File</button>
-        </div>
-      </div>
-      <input v-if="isAdminUser"
-        class="w-[30%] mb-2 bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white font-futura"
-        type="button" id="loadFileXml" value="Add File" onclick="document.getElementById('img').click();" />
+      <div class="mt-7 w-[100%]">
+        <h1 class="text-text uppercase text-p">Files</h1>
 
-      <input class="hidden" type="file" id="img" name="img" @change="handleFileUpload($event, product)" multiple
-        :data-product="product.id">
+        <!-- Language Filter Dropdown -->
+        <div>
+          <select v-model="selectedFilterLanguage" class="border border-main p-2 rounded-lg">
+            <option value="">All Languages</option>
+            <option value="danish">Danish</option>
+            <option value="english">English</option>
+            <option value="polish">Polish</option>
+            <option value="ukrainian">Ukrainian</option>
+          </select>
+        </div>
+
+        <ul>
+          <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
+            <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
+            <div>
+              <button v-if="isAdminUser" @click="deleteFileHandler(product, index)"
+                class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
+              <button
+                class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
+                @click="downloadFile(file.url)">Download File</button>
+            </div>
+          </li>
+        </ul>
+
+        <!-- Add File Input and Language Selection -->
+        <div v-if="isAdminUser">
+          <div v-if="errorMessage" class="w-[65%] my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
+            {{ errorMessage }}
+          </div>
+          <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, product)"
+            multiple :data-product="product.id" />
+          <select v-model="selectedLanguage" class="border border-main p-2 rounded-lg">
+            <option disabled value="">Select Language</option>
+            <option value="danish">Danish</option>
+            <option value="english">English</option>
+            <option value="polish">Polish</option>
+            <option value="ukrainian">Ukrainian</option>
+          </select>
+          <button
+            class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
+            @click="openFileInput('fileInput')">Add File</button>
+        </div>
+
+      </div>
     </div>
   </div>
   <div v-else>error</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, onMounted, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import useProducts from '../modules/products.js';
+import isAdmin from '../modules/isAdmin.js';
+import { auth } from '../firebase.js';
+import { onAuthStateChanged } from 'firebase/auth';
+
+const {
+  getProductById,
+  handleImageUpload,
+  deleteImage,
+  handleFileUpload,
+  deleteFile,
+  downloadFile,
+  selectedLanguage,
+  errorMessage,
+} = useProducts();
 
 const route = useRoute();
 const router = useRouter();
-
-const { showUpdatePopup, getProductById, deleteImage, deleteFile, downloadFile, firebaseUpdateSingleItem, firebaseDeleteSingleItem, handleFileUpload, handleImageUpload } = useProducts();
-
 const productId = ref(route.params.id);
 const product = ref(null);
+const isAdminUser = ref(false);
+const selectedImage = ref(null);
 
 const newProductName = ref('');
 const newProductDescription = ref('');
-const selectedImage = ref(null); // Variable to store the index of selected image
 
+const selectedFilterLanguage = ref('');
 
-onMounted(async () => {
-  try {
-    const result = await getProductById(productId.value);
-    product.value = result;
-    newProductName.value = result.productName;
-    newProductDescription.value = result.productDescription;
-  } catch (error) {
-    console.error('Error fetching product:', error);
+const filteredFiles = computed(() => {
+  if (!selectedFilterLanguage.value) {
+    return product.value ? product.value.productFiles : [];
   }
+  return product.value.productFiles.filter(file => file.language === selectedFilterLanguage.value);
 });
 
-const openFileInput = () => {
-  document.getElementById('file').click();
-};
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid)
+        .then((isAdmin) => {
+          isAdminUser.value = isAdmin;
+        })
+        .catch((error) => {
+          console.error('Error checking admin role:', error);
+        });
+    }
+  });
+
+  getProductById(productId.value).then((fetchedProduct) => {
+    product.value = fetchedProduct;
+    newProductName.value = fetchedProduct.productName;
+    newProductDescription.value = fetchedProduct.productDescription;
+  }).catch((error) => {
+    console.error('Error fetching product:', error);
+  });
+});
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      productId.value = newId;
+      getProductById(newId).then((fetchedProduct) => {
+        product.value = fetchedProduct;
+        newProductName.value = fetchedProduct.productName;
+        newProductDescription.value = fetchedProduct.productDescription;
+      }).catch((error) => {
+        console.error('Error fetching product:', error);
+      });
+    }
+  }
+);
 
 const toggleDeleteButton = (index) => {
-  // Toggle the selectedImage to show or hide the delete button
-  selectedImage.value = selectedImage.value === index ? null : index;
+  if (selectedImage.value === index) {
+    selectedImage.value = null;
+  } else {
+    selectedImage.value = index;
+  }
+};
+
+const deleteImageHandler = (product, selectedImage) => {
+  deleteImage(product, selectedImage);
+};
+
+const deleteFileHandler = (product, index) => {
+  deleteFile(product, index).catch(error => {
+    console.error('Error in deleteFileHandler:', error);
+  });
+};
+
+const openFileInput = (inputId) => {
+  document.getElementById(inputId).click();
 };
 
 const getFileName = (fileUrl) => {
@@ -133,53 +201,4 @@ const getFileName = (fileUrl) => {
   const fileName = fileNameWithExtension.split('.')[0];
   return fileName;
 };
-
-const deleteImageHandler = async (product, index) => {
-  console.log('Product object:', product); // Log the product object
-  if (product && product.id) {
-    try {
-      await deleteImage(product, index); // Call deleteImage with the product and index
-      // Reset selectedImage to null to hide the delete button
-      selectedImage.value = null;
-    } catch (error) {
-      console.error('Error deleting image:', error);
-    }
-  } else {
-    console.error('Product ID is missing.');
-  }
-};
-
-const deleteProductHandler = async (productId) => {
-  try {
-    await firebaseDeleteSingleItem(productId, product.value);
-    router.push('/products'); // Redirect to Products page after deletion
-  } catch (error) {
-    console.error('Error deleting product:', error);
-  }
-};
-
-const closeUpdatePopup = () => {
-  showUpdatePopup.value = false; // Close the popup
-};
-
-
-import isAdmin from '../modules/isAdmin.js';
-import { auth } from '../firebase.js'; // Assuming you have a firebase.js file exporting the auth object
-import { onAuthStateChanged } from 'firebase/auth';
-
-const isAdminUser = ref(false);
-
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isAdmin(user.uid).then((isAdmin) => {
-        isAdminUser.value = isAdmin;
-      }).catch((error) => {
-        console.error('Error checking admin role:', error);
-      });
-    } else {
-      isAdminUser.value = false;
-    }
-  });
-});
 </script>
