@@ -2,7 +2,7 @@
 
 import { db } from '../firebase.js';
 import { ref } from 'vue';
-import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject, listAll, getMetadata } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
 import { query, orderBy } from 'firebase/firestore';
@@ -11,18 +11,18 @@ const storage = getStorage(); // Initialize Firebase Storage
 
 const useProducts = () => {
   const showUpdatePopup = ref(false); // State to show/hide the update popup
-
+  const selectedLanguage = ref('');
+  const errorMessage = ref('');
   const getProductById = async (productId) => {
     try {
       const docRef = doc(db, 'products', productId);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        // Initialize product with an empty array for productImages
         const productData = docSnap.data();
         productData.productImages = productData.productImages || [];
-        productData.id = docSnap.id; // Assign the document ID to the product object
-        console.log('Retrieved product:', productData); // Log the retrieved product object
+        productData.productFiles = productData.productFiles || [];
+        productData.id = docSnap.id;
         return productData;
       } else {
         throw new Error('Product not found');
@@ -37,37 +37,41 @@ const useProducts = () => {
 
   // Function to upload files to Firebase Storage
   const handleFileUpload = async (event, product) => {
-    const storage = getStorage();
     const files = event.target.files;
+    if (!selectedLanguage.value) {
+      errorMessage.value = 'Please select a language before uploading a file.';
+      return;
+    }
 
-    if (!files.length) return;
+    errorMessage.value = '';
+
+    const promises = Array.from(files).map(async (file) => {
+      try {
+        const fileRef = storageRef(storage, `products/files/${file.name}`);
+
+        await uploadBytes(fileRef, file);
+        const downloadURL = await getDownloadURL(fileRef);
+
+        const newFile = {
+          url: downloadURL,
+          language: selectedLanguage.value,
+        };
+
+        await updateDoc(doc(db, 'products', product.id), {
+          productFiles: arrayUnion(newFile),
+        });
+
+        product.productFiles.push(newFile);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    });
 
     try {
-      const filePromises = Array.from(files).map(async (file) => {
-        const fileRef = storageRef(storage, `products/files/${file.name}`);
-        await uploadBytes(fileRef, file);
-        return getDownloadURL(fileRef);
-      });
-
-      const fileUrls = await Promise.all(filePromises);
-
-      if (product) {
-        if (!Array.isArray(product.productFiles)) {
-          product.productFiles = [];
-        }
-        product.productFiles.push(...fileUrls);
-
-        await updateProductInFirestore(product);
-      } else {
-        if (!Array.isArray(addProductData.value.productFiles)) {
-          addProductData.value.productFiles = [];
-        }
-        addProductData.value.productFiles.push(...fileUrls);
-      }
-
-      event.target.value = '';
+      await Promise.all(promises);
     } catch (error) {
-      console.error('Error uploading the files:', error);
+      console.error('Error uploading files:', error);
+      errorMessage.value = 'Failed to upload some files. Please try again.';
     }
   };
 
@@ -75,7 +79,7 @@ const useProducts = () => {
   const deleteFile = async (product, index) => {
     console.log('Deleting file:', product, index); // Log the product and index
     if (index >= 0 && product.productFiles && product.productFiles.length > index) {
-      const fileUrl = product.productFiles[index];
+      const fileUrl = product.productFiles[index].url; // Adjusted to access the URL property
       try {
         const storage = getStorage();
         const fileRef = storageRef(storage, fileUrl);
@@ -149,7 +153,7 @@ const useProducts = () => {
     try {
       // Upload all the images to Firebase Storage and get their download URLs
       const imagePromises = Array.from(files).map(async (file) => {
-        const imageRef = storageRef(storage, `products/imgs/${Date.now()}_${file.name}`);
+        const imageRef = storageRef(storage, `products/imgs/${file.name}`);
         await uploadBytes(imageRef, file);
         return getDownloadURL(imageRef);
       });
@@ -182,7 +186,7 @@ const useProducts = () => {
     }
   };
 
-  // Function to delete an image from Firebase Storage
+
   // Function to delete an image from Firebase Storage
   const deleteImage = async (product, index) => {
     // Check if the index is valid
@@ -397,7 +401,9 @@ const useProducts = () => {
     deleteFile,
     handleFileUpload,
     getProductById,
-    showUpdatePopup
+    showUpdatePopup,
+    selectedLanguage,
+    errorMessage,
   };
 };
 

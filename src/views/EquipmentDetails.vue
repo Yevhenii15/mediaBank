@@ -67,8 +67,11 @@
           <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
             <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
             <div>
-              <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)" class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
-              <button class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white" @click="downloadFile(file.url)">Download File</button>
+              <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)"
+                class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
+              <button
+                class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
+                @click="downloadFile(file.url)">Download File</button>
             </div>
           </li>
         </ul>
@@ -78,7 +81,8 @@
           <div v-if="errorMessage" class="w-[65%] my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
             {{ errorMessage }}
           </div>
-          <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, equipment)" multiple :data-equipment="equipment.id" />
+          <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, equipment)"
+            multiple :data-equipment="equipment.id" />
           <select v-model="selectedLanguage" class="border border-main p-2 rounded-lg">
             <option disabled value="">Select Language</option>
             <option value="danish">Danish</option>
@@ -86,7 +90,9 @@
             <option value="polish">Polish</option>
             <option value="ukrainian">Ukrainian</option>
           </select>
-          <button class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura" @click="openFileInput('fileInput')">Add File</button>
+          <button
+            class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
+            @click="openFileInput('fileInput')">Add File</button>
         </div>
 
       </div>
@@ -198,9 +204,16 @@ const goToEquipment = (id) => {
   router.push(`/equipment/${id}`);
 };
 
-const getFileName = (url) => {
-  const parts = url.split('/');
-  return decodeURIComponent(parts[parts.length - 1].split('?')[0]);
+const getFileName = (fileUrl) => {
+  // Decode the URL
+  const decodedUrl = decodeURIComponent(fileUrl);
+  // Split the decoded URL by '/' and get the last element
+  const parts = decodedUrl.split('/');
+  // Get the last part of the URL
+  const fileNameWithExtension = parts[parts.length - 1];
+  // Split the filename by '.' and get the first part (filename without extension)
+  const fileName = fileNameWithExtension.split('.')[0];
+  return fileName;
 };
 </script>
 
