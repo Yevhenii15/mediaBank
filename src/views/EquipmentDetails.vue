@@ -1,3 +1,4 @@
+<!-- EquipmentDetails.vue -->
 <template>
   <div v-if="equipment" class="w-[100%] px-[5%] flex font-futura pt-10 relative top-[15vh] mb-[20vh]">
     <!-- Buttons for other equipment pages -->
@@ -51,36 +52,50 @@
       <p class="w-[100%]">{{ newEquipmentDescription }}</p>
       <div class="mt-7 w-[100%]">
         <h1 class="text-text uppercase text-p">Files</h1>
+        <!-- Language Filter Dropdown -->
+        <div>
+          <select v-model="selectedFilterLanguage" class="border border-main p-2 rounded-lg">
+            <option value="">All Languages</option>
+            <option value="danish">Danish</option>
+            <option value="english">English</option>
+            <option value="polish">Polish</option>
+            <option value="ukrainian">Ukrainian</option>
+          </select>
+        </div>
+
         <ul>
-          <li v-for="(file, index) in equipment.equipmentFiles" :key="index" class="flex justify-between">
-            <a class="my-1" :href="file" download>{{ getFileName(file) }}</a>
+          <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
+            <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
             <div>
-              <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)"
-                class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
-              <button
-                class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
-                @click="downloadFile(file)">Download File</button>
+              <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)" class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
+              <button class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white" @click="downloadFile(file.url)">Download File</button>
             </div>
-
-
           </li>
         </ul>
 
+        <!-- Add File Input and Language Selection -->
         <div v-if="isAdminUser">
-          <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, equipment)"
-            multiple :data-equipment="equipment.id" />
-          <button
-            class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
-            @click="openFileInput('fileInput')">Add File</button>
+          <div v-if="errorMessage" class="w-[65%] my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
+            {{ errorMessage }}
+          </div>
+          <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, equipment)" multiple :data-equipment="equipment.id" />
+          <select v-model="selectedLanguage" class="border border-main p-2 rounded-lg">
+            <option disabled value="">Select Language</option>
+            <option value="danish">Danish</option>
+            <option value="english">English</option>
+            <option value="polish">Polish</option>
+            <option value="ukrainian">Ukrainian</option>
+          </select>
+          <button class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura" @click="openFileInput('fileInput')">Add File</button>
         </div>
+
       </div>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import useEquipment from '../modules/equipment.js';
 import isAdmin from '../modules/isAdmin.js';
@@ -94,7 +109,9 @@ const {
   handleFileUpload,
   deleteFile,
   getAllEquipment,
-  downloadFile
+  downloadFile,
+  selectedLanguage, // Import the ref from useEquipment
+  errorMessage, // Import the ref from useEquipment
 } = useEquipment();
 
 const route = useRoute();
@@ -107,6 +124,15 @@ const selectedImage = ref(null);
 const newEquipmentName = ref('');
 const newEquipmentDescription = ref('');
 const allEquipment = ref([]);
+
+const selectedFilterLanguage = ref('');
+
+const filteredFiles = computed(() => {
+  if (!selectedFilterLanguage.value) {
+    return equipment.value.equipmentFiles;
+  }
+  return equipment.value.equipmentFiles.filter(file => file.language === selectedFilterLanguage.value);
+});
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
@@ -159,7 +185,9 @@ const deleteImageHandler = (equipment, selectedImage) => {
 };
 
 const deleteFileHandler = (equipment, index) => {
-  deleteFile(equipment, index);
+  deleteFile(equipment, index).catch(error => {
+    console.error('Error in deleteFileHandler:', error);
+  });
 };
 
 const openFileInput = (inputId) => {
@@ -171,15 +199,8 @@ const goToEquipment = (id) => {
 };
 
 const getFileName = (url) => {
-  // Decode the URL
-  const decodedUrl = decodeURIComponent(url);
-  // Split the decoded URL by '/' and get the last element
-  const parts = decodedUrl.split('/');
-  // Get the last part of the URL
-  const fileNameWithExtension = parts[parts.length - 1];
-  // Split the filename by '.' and get the first part (filename without extension)
-  const fileName = fileNameWithExtension.split('.')[0];
-  return fileName;
+  const parts = url.split('/');
+  return decodeURIComponent(parts[parts.length - 1].split('?')[0]);
 };
 </script>
 
