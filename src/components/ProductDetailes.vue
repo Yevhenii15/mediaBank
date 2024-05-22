@@ -36,9 +36,30 @@
     </div>
 
     <div class="info w-[50%] flex flex-col">
-      <h1 class="w-[100%] uppercase text-[50px] text-text">{{ newProductName }}</h1>
+      <input v-if="isAdminUser" class="w-[100%] uppercase text-[50px] text-text" v-model="newProductName" type="text"
+        placeholder="New Product Name">
+      <h1 v-if="!isAdminUser" class="w-[100%] uppercase text-[50px] text-text">{{ newProductName }}</h1>
       <h1 class="text-text uppercase my-3 text-p">Description</h1>
-      <p class="w-[100%]">{{ newProductDescription }}</p>
+      <textarea v-if="isAdminUser" class="w-full text-h3 h-28 text-text" v-model="newProductDescription"
+        placeholder="New Product Description"></textarea>
+      <h1 v-if="!isAdminUser" class="w-full text-h3 h-28 text-text">{{ newProductDescription }}</h1>
+      <!-- Pop-up window for update confirmation -->
+      <div v-if="showUpdatePopup"
+        class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-5 rounded shadow-md flex justify-center items-center gap-10">
+          <p class="text-h3">Product updated successfully!</p>
+          <button class=" bg-main text-white px-3 py-1 rounded-lg" @click="closeUpdatePopup">OK</button>
+        </div>
+      </div>
+      <div class="flex gap-2 my-5">
+        <button v-if="isAdminUser"
+          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
+          @click="firebaseUpdateSingleItem(product, newProductName, newProductDescription)">Update
+          Product</button>
+        <button v-if="isAdminUser"
+          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
+          @click="firebaseDeleteSingleItem(productId, product)">Delete Product</button>
+      </div>
 
       <div class="mt-7 w-[100%]">
         <h1 class="text-text uppercase text-p">Files</h1>
@@ -109,6 +130,9 @@ const {
   downloadFile,
   selectedLanguage,
   errorMessage,
+  firebaseUpdateSingleItem,
+  firebaseDeleteSingleItem,
+  showUpdatePopup
 } = useProducts();
 
 const route = useRoute();
@@ -120,6 +144,7 @@ const selectedImage = ref(null);
 
 const newProductName = ref('');
 const newProductDescription = ref('');
+
 
 const selectedFilterLanguage = ref('');
 
@@ -188,6 +213,9 @@ const deleteFileHandler = (product, index) => {
 
 const openFileInput = (inputId) => {
   document.getElementById(inputId).click();
+};
+const closeUpdatePopup = () => {
+  showUpdatePopup.value = false;
 };
 
 const getFileName = (fileUrl) => {

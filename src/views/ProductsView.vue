@@ -29,15 +29,13 @@
                     </select>
                 </div>
                 <div class="flex my-8">
-                    <input class="w-[48%] border border-main rounded-lg pl-3 pt-1 pb-11 mr-[2%]"
-                        v-model="addProductData.productDescription" type="text" placeholder="Product Description">
+                    <textarea class="w-[48%] pt-1 border border-main rounded-lg pl-3  h-16 mr-[2%]"
+                        v-model="addProductData.productDescription" type="text" placeholder="Product Description"></textarea>
                     <div class="w-[48%] ml-[2%] flex flex-col justify-between">
                         <input
-                            class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
+                            class="w-[100%] file:h-16 file:w-[50%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
                             type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
-                        <input
-                            class="w-[100%] file:w-[75%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:py- file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
-                            type="file" @change="handleFileUpload($event, null)" multiple :data-product="null">
+                        
                     </div>
                 </div>
                 <div class="flex justify-center w-[100%]">
@@ -78,7 +76,6 @@ const {
     firebaseAddSingleItem,
     addProductData,
     handleImageUpload,
-    handleFileUpload,
 } = useProducts();
 
 let isAdminUser = ref(false);
