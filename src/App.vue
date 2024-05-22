@@ -8,6 +8,7 @@
           <!-- Dynamic Navbar Links -->
           <div :class="isAdminUser ? 'navbar-admin' : 'navbar-user'"
             class="navMenus flex justify-between text-text text-h3 ml-[70px]">
+
             <RouterLink v-for="link in filteredLinks" :key="link.to" :to="link.to"
               :class="{ active: isActive(link.to) }">
               {{ link.name }}
@@ -60,10 +61,19 @@ const filteredLinks = computed(() => {
   return links.filter(link => !link.adminOnly || isAdminUser.value);
 });
 
-// Check if link is active based on current route
 const isActive = (linkTo) => {
+  console.log('Checking active link:', linkTo, 'against current path:', route.path);
+  if (linkTo.startsWith('/equipment')) {
+    console.log('Equipment route detected');
+    return route.path.startsWith('/equipment');
+  } else if (linkTo.startsWith('/products')) {
+    console.log('Products route detected');
+    return route.path.startsWith('/products') || route.path.startsWith('/product/');
+  }
   return route.path.startsWith(linkTo);
 };
+
+
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
