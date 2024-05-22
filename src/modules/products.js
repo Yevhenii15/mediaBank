@@ -6,10 +6,14 @@ import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, arrayUnion }
 import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject, listAll, getMetadata } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
 import { query, orderBy } from 'firebase/firestore';
+import { useRouter } from 'vue-router';
+
 
 const storage = getStorage(); // Initialize Firebase Storage
 
 const useProducts = () => {
+  const router = useRouter(); // Initialize the router
+
   const showUpdatePopup = ref(false); // State to show/hide the update popup
   const selectedLanguage = ref('');
   const errorMessage = ref('');
@@ -75,28 +79,7 @@ const useProducts = () => {
     }
   };
 
-  // Function to delete a file from Firebase Storage
-  const deleteFile = async (product, index) => {
-    console.log('Deleting file:', product, index); // Log the product and index
-    if (index >= 0 && product.productFiles && product.productFiles.length > index) {
-      const fileUrl = product.productFiles[index].url; // Adjusted to access the URL property
-      try {
-        const storage = getStorage();
-        const fileRef = storageRef(storage, fileUrl);
-        await deleteObject(fileRef);
-        product.productFiles.splice(index, 1);
-        await updateProductInFirestore(product);
-        console.log('File deleted:', fileUrl);
-      } catch (error) {
-        console.error('Error deleting the file:', error);
-      }
-    } else {
-      console.error('Invalid index or file URLs not found.');
-      console.log('Product:', product);
-      console.log('Index:', index);
-      console.log('Product files:', product.productFiles);
-    }
-  };
+
 
 
   // Function to download files from Firebase Storage
@@ -187,38 +170,50 @@ const useProducts = () => {
   };
 
 
-  // Function to delete an image from Firebase Storage
   const deleteImage = async (product, index) => {
-    // Check if the index is valid
     if (index >= 0 && product.productImages && product.productImages.length > index) {
-      // Get the URL of the image to be deleted
       const imageUrl = product.productImages[index];
-
       try {
-        // Delete the image from Firestore
         const storage = getStorage();
-        const imageRef = storageRef(storage, imageUrl);
-
-        // Attempt to delete the image from storage
-        await deleteObject(imageRef);
-
-        // Remove the image URL from the product's array
-        product.productImages.splice(index, 1);
-
-        // Update the product in Firestore to reflect the changes
-        await updateProductInFirestore(product);
-
-        console.log('Image deleted!');
+        if (typeof imageUrl === 'string') {
+          const imageRef = storageRef(storage, imageUrl);
+          await deleteObject(imageRef);
+          product.productImages.splice(index, 1);
+          await updateProductInFirestore(product);
+          console.log('Image deleted:', imageUrl);
+        } else {
+          console.error('Invalid imageUrl:', imageUrl);
+        }
       } catch (error) {
         console.error('Error deleting the image:', error);
-        // Handle the error gracefully
-        // For example, you can log the error and still proceed with updating the UI
-        // Or you can show a user-friendly message to the user
       }
     } else {
       console.error('Invalid index or image URLs not found.');
     }
   };
+  
+  const deleteFile = async (product, index) => {
+    if (index >= 0 && product.productFiles && product.productFiles.length > index) {
+      const fileUrl = product.productFiles[index].url;
+      try {
+        const storage = getStorage();
+        if (typeof fileUrl === 'string') {
+          const fileRef = storageRef(storage, fileUrl);
+          await deleteObject(fileRef);
+          product.productFiles.splice(index, 1);
+          await updateProductInFirestore(product);
+          console.log('File deleted:', fileUrl);
+        } else {
+          console.error('Invalid fileUrl:', fileUrl);
+        }
+      } catch (error) {
+        console.error('Error deleting the file:', error);
+      }
+    } else {
+      console.error('Invalid index or file URLs not found.');
+    }
+  };
+  
 
   const updateProductInFirestore = async (product) => {
     try {
@@ -361,32 +356,48 @@ const useProducts = () => {
       // Delete the product from Firestore
       const docRef = doc(db, 'products', id);
       await deleteDoc(docRef);
-
+  
       // Delete associated images from Firebase Storage
       if (product && product.productImages) {
         const storage = getStorage();
         for (const imageUrl of product.productImages) {
-          const imageRef = storageRef(storage, imageUrl);
-          await deleteObject(imageRef);
-          console.log('Image deleted:', imageUrl);
+          // Ensure imageUrl is a string
+          if (typeof imageUrl === 'string') {
+            const imageRef = storageRef(storage, imageUrl);
+            await deleteObject(imageRef);
+            console.log('Image deleted:', imageUrl);
+          } else {
+            console.error('Invalid imageUrl:', imageUrl);
+          }
         }
       }
-
+  
       // Delete associated files from Firebase Storage
       if (product && product.productFiles) {
         const storage = getStorage();
-        for (const fileUrl of product.productFiles) {
-          const fileRef = storageRef(storage, fileUrl);
-          await deleteObject(fileRef);
-          console.log('File deleted:', fileUrl);
+        for (const file of product.productFiles) {
+          const fileUrl = file.url; // Adjust if your file structure is different
+          // Ensure fileUrl is a string
+          if (typeof fileUrl === 'string') {
+            const fileRef = storageRef(storage, fileUrl);
+            await deleteObject(fileRef);
+            console.log('File deleted:', fileUrl);
+          } else {
+            console.error('Invalid fileUrl:', fileUrl);
+          }
         }
       }
-
+  
       console.log('Product and associated files deleted successfully!');
+      
+      // Navigate to the products page after deletion
+      router.push('/products');
+  
     } catch (error) {
       console.error('Error deleting product:', error);
     }
   };
+  
 
   return {
     getProductsData,
