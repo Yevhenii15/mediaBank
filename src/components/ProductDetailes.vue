@@ -1,24 +1,25 @@
 <template>
-  <div v-if="product" class="w-[100%] px-[5%] flex font-futura pt-10 relative top-[15vh] mb-[20vh]">
-    <div class="pictures w-[50%] flex-col flex items-center">
+  <div v-if="product" class="flex flex-col md:flex-row font-futura pt-10 relative top-[15vh] mb-[20vh]">
+    <!-- Product Images -->
+    <div class="w-full md:w-1/2 px-4 md:px-0 mb-8 md:mb-0">
       <!-- Main product image -->
-      <div class="relative w-[100%] flex justify-center">
-        <img class="w-96 h-96 object-cover object-center cursor-pointer border border-main"
+      <div class="relative w-full flex justify-center">
+        <img class="w-full md:w-96 h-96 object-cover object-center cursor-pointer border border-main"
           :src="product.productImages[0]" alt="Main Product Image" @click="toggleDeleteButton(0)" />
       </div>
 
       <!-- Additional product images -->
-      <div class="w-96">
-        <div class="w-[103%] gap-[3%] flex flex-wrap">
-          <div v-for="(image, index) in product.productImages.slice(1)" :key="index" class="relative w-[22%] mt-5">
-            <img class="border w-[100%] h-24 border-main object-cover object-center cursor-pointer" :src="image"
+      <div class="w-full md:w-96 mt-4">
+        <div class="grid grid-cols-3 gap-4">
+          <div v-for="(image, index) in product.productImages.slice(1)" :key="index" class="relative w-full md:w-auto">
+            <img class="border w-full h-24 border-main object-cover object-center cursor-pointer" :src="image"
               alt="Product Image" @click="toggleDeleteButton(index + 1)" />
           </div>
         </div>
       </div>
 
       <!-- Button to add more images -->
-      <div class="w-96 mt-5 flex">
+      <div class="w-full md:w-96 mt-4 flex justify-between">
         <div v-if="isAdminUser">
           <input class="hidden" type="file" id="imageInput" name="file" @change="handleImageUpload($event, product)"
             multiple :data-product="product.id" />
@@ -30,38 +31,34 @@
         <!-- Delete button for the selected image -->
         <div v-if="isAdminUser">
           <button v-if="selectedImage !== null" @click="deleteImageHandler(product, selectedImage)"
-            class="bg-main text-white border ml-4 px-4 py-2 rounded-lg">Delete</button>
+            class="bg-main text-white border px-4 py-2 rounded-lg">Delete</button>
         </div>
       </div>
     </div>
 
-    <div class="info w-[50%] flex flex-col">
-      <input v-if="isAdminUser" class="w-[100%] uppercase text-[50px] text-text" v-model="newProductName" type="text"
+    <!-- Product Info -->
+    <div class="w-full md:w-1/2 px-4">
+      <input v-if="isAdminUser" class="w-full uppercase text-3xl mb-4 text-text" v-model="newProductName" type="text"
         placeholder="New Product Name">
-      <h1 v-if="!isAdminUser" class="w-[100%] uppercase text-[50px] text-text">{{ newProductName }}</h1>
+      <h1 v-if="!isAdminUser" class="w-full uppercase text-3xl mb-4 text-text">{{ newProductName }}</h1>
       <h1 class="text-text uppercase my-3 text-p">Description</h1>
-      <textarea v-if="isAdminUser" class="w-full text-h3 h-28 text-text" v-model="newProductDescription"
+      <textarea v-if="isAdminUser" class="w-full text-lg h-28 text-text" v-model="newProductDescription"
         placeholder="New Product Description"></textarea>
-      <h1 v-if="!isAdminUser" class="w-full text-h3 h-28 text-text">{{ newProductDescription }}</h1>
-      <!-- Pop-up window for update confirmation -->
-      <div v-if="showUpdatePopup"
-        class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-5 rounded shadow-md flex justify-center items-center gap-10">
-          <p class="text-h3">Product updated successfully!</p>
-          <button class=" bg-main text-white px-3 py-1 rounded-lg" @click="closeUpdatePopup">OK</button>
-        </div>
-      </div>
-      <div class="flex gap-2 my-5">
+      <h1 v-if="!isAdminUser" class="w-full text-lg h-28 text-text">{{ newProductDescription }}</h1>
+
+      <!-- Update and Delete Buttons -->
+      <div class="flex gap-4 my-5">
         <button v-if="isAdminUser"
-          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
+          class="bg-white text-main border border-main px-6 py-2 rounded-lg hover:bg-main hover:text-white"
           @click="firebaseUpdateSingleItem(product, newProductName, newProductDescription)">Update
           Product</button>
         <button v-if="isAdminUser"
-          class="bg-white text-main border border-main px-[40px] py- rounded-lg mr-5 hover:bg-main hover:text-white"
+          class="bg-white text-main border border-main px-6 py-2 rounded-lg hover:bg-main hover:text-white"
           @click="firebaseDeleteSingleItem(productId, product)">Delete Product</button>
       </div>
 
-      <div class="mt-7 w-[100%]">
+      <!-- Files -->
+      <div class="mt-7 w-full">
         <h1 class="text-text uppercase text-p">Files</h1>
 
         <!-- Language Filter Dropdown -->
@@ -74,23 +71,31 @@
             <option value="ukrainian">Ukrainian</option>
           </select>
         </div>
+        <!-- Pop-up window for update confirmation -->
+        <div v-if="showUpdatePopup"
+          class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+          <div class="bg-white p-5 rounded shadow-md flex justify-center items-center gap-10">
+            <p class="text-h3">Product updated successfully!</p>
+            <button class=" bg-main text-white px-3 py-1 rounded-lg" @click="closeUpdatePopup">OK</button>
+          </div>
+        </div>
 
+        <!-- File List -->
         <ul>
           <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
             <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
             <div>
               <button v-if="isAdminUser" @click="deleteFileHandler(product, index)"
-                class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
-              <button
-                class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
+                class="text-text underline px-4 rounded-lg">Delete File</button>
+              <button class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white"
                 @click="downloadFile(file.url)">Download File</button>
             </div>
           </li>
         </ul>
 
         <!-- Add File Input and Language Selection -->
-        <div v-if="isAdminUser">
-          <div v-if="errorMessage" class="w-[65%] my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
+        <div v-if="isAdminUser" class="w-full">
+          <div v-if="errorMessage" class="my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
             {{ errorMessage }}
           </div>
           <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, product)"
@@ -106,12 +111,13 @@
             class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
             @click="openFileInput('fileInput')">Add File</button>
         </div>
-
       </div>
     </div>
   </div>
   <div v-else>error</div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
