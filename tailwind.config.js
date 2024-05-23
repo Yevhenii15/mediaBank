@@ -26,6 +26,9 @@ module.exports = {
         text2: '#a7a7a7',
         border: '#41748c',
       },
+      backgroundImage: {
+        'gradient-main': 'linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(93, 137, 179, 1) 100%)',
+      },
     }
   },
   plugins: [],
