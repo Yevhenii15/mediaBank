@@ -1,7 +1,10 @@
+/* login.js */
 import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { ref, nextTick } from 'vue';
 import router from '../router';
 import { getFirestore, collection, doc, setDoc, getDocs } from 'firebase/firestore';
+import { deleteDoc } from 'firebase/firestore';
+import { deleteUser as deleteAuthUser } from 'firebase/auth';
 
 export default function login() {
   const email = ref('');
@@ -81,6 +84,24 @@ export default function login() {
       // Handle the error or log additional information as needed
     }
   };
+  const deleteUser = async (uid) => {
+    try {
+      const user = auth.currentUser;
+      
+      // Delete user from Firebase Authentication
+      await deleteAuthUser(user);
+  
+      // Delete user document from Firestore
+      await deleteDoc(doc(collection(firestore, 'users'), uid));
+      
+      console.log('User deleted successfully from Firebase Authentication and Firestore.');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw new Error('Error deleting user');
+    }
+  };
+  
+  
 
   const fetchAllUsers = async () => {
     try {
@@ -106,5 +127,6 @@ export default function login() {
     password,
     isLoggedIn,
     errorMessage,
+    deleteUser
   };
 }

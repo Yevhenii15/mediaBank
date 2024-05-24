@@ -1,3 +1,4 @@
+<!-- appusersview.vue  -->
 <template>
   <div class="px-5 lg:px-0 font-futura flex flex-col items-center w-full py-5 relative top-[10vh] lg:top-[15vh] mb-[10vh]">
     <div class="h1text flex justify-start w-full md:w-3/4 px-4 md:px-0">
@@ -31,29 +32,32 @@
     </div>
 
     <!-- Display users -->
-    <div class="w-full md:w-3/4 px-4 md:px-0 mt-5">
-      <h2 class="text-2xl text-main mb-4">All Users:</h2>
-      <div class="flex flex-col bg-white">
-        <div class="flex py-2 border-b border-main font-bold justify-between">
-          <div class="w-1/3 pl-4">Email</div>
-          <div class="w-1/3 flex justify-end pr-4">
-            <div class="w-1/2 flex justify-end">User</div>
-            <div class="w-1/2 flex justify-end">Admin</div>
-          </div>
-        </div>
-        <div v-for="user in users" :key="user.email" class="flex justify-between py-2 border-b">
-          <div class="w-1/3 pl-4">{{ user.email }}</div>
-          <div class="w-1/3 flex justify-end pr-4">
-            <div class="w-1/2 flex justify-end">
-              <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'user'" />
-            </div>
-            <div class="w-1/2 flex justify-end">
-              <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'admin'" />
-            </div>
-          </div>
-        </div>
+<div class="w-full md:w-3/4 px-4 md:px-0 mt-5">
+  <h2 class="text-2xl text-main mb-4">All Users:</h2>
+  <div class="flex flex-col bg-white">
+    <div class="flex py-2 border-b border-main font-bold justify-between">
+      <div class="w-1/3 pl-4">Email</div>
+      <div class="w-1/3 flex justify-end pr-4">
+        <div class="w-1/2 flex justify-end">User</div>
+        <div class="w-1/2 flex justify-end">Admin</div>
       </div>
     </div>
+    <div v-for="user in users" :key="user.email" class="flex justify-between py-2 border-b">
+      <div class="w-1/3 pl-4">{{ user.email }}</div>
+      <div class="w-1/3 flex justify-end pr-4">
+        <div class="w-1/2 flex justify-end">
+          <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'user'" />
+        </div>
+        <div class="w-1/2 flex justify-end">
+          <input class="checkbox-blue" type="checkbox" disabled :checked="user.role === 'admin'" />
+        </div>
+      </div>
+      <!-- Add delete button here -->
+      <button class="text-red-500" @click="deleteUser(user.uid)">Delete</button>
+    </div>
+  </div>
+</div>
+
   </div>
 </template>
 
@@ -61,7 +65,7 @@
 import { ref, onMounted } from 'vue';
 import login from '../modules/login.js';
 
-const { signUp, errorMessage, fetchAllUsers } = login();
+const { signUp, errorMessage, fetchAllUsers, deleteUser } = login();
 
 const email = ref('');
 const password = ref('');
