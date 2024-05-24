@@ -1,24 +1,26 @@
 <template>
-  <div class="flex flex-col items-center font-futura relative top-[15vh] mb-[15vh]">
+  <div class="flex flex-col items-center font-futura relative top-[15vh] mb-[15vh]  px-[5%]">
     <div v-if="isAdminUser" class="w-[100%] flex items-center flex-col mt-[20px]">
       <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
-      <div class="w-[50%] flex justify-between my-[20px]">
-        <input class="file:bg-main w-[50%]  
+      <div class="lg:w-[50%] w-[90%] flex justify-between  my-[20px]">
+        <input class="file:bg-main w-[70%]  
+
             file:text-white
             file:border-none
-            file:px-[40px]
+            lg:file:px-[40px]
+            file:px-[10%]
             file:py-[9px]
             file:rounded-lg
             file:mr-5
             file:hover:bg-text
             font-futura " type="file" @change="handleMediaUpload($event)" multiple :data-product="null">
-        <button class="hover:bg-text bg-main text-white px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
+        <button class="hover:bg-text w-[30%] bg-main text-white lg:px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
           Post</button>
       </div>
     </div>
 
     <!-- Filter Buttons -->
-    <div class="flex flex-col w-[11%] fixed left-0">
+    <div class="lg:flex hidden flex-col w-[11%] fixed left-0">
       <button @click="filterMedia('all')"
         :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': selectedMediaType === 'all' }]">All</button>
       <button @click="filterMedia('image')"
@@ -27,8 +29,17 @@
         :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': selectedMediaType === 'video' }]">Videos</button>
     </div>
 
-    <div class="w-[60%] my-6 flex flex-row flex-wrap">
-      <div class="w-[21%] mx-[2%] flex flex-col" v-for="(media, index) in filteredMediaList" :key="index">
+    <div class="flex justify-between w-[90%] lg:hidden">
+    <select @change="filterMedia($event.target.value)" class="bg-white text-main border border-main rounded-xl p-2 uppercase font-bold">
+        <option :value="'all'" :selected="selectedMediaType === 'all'">All</option>
+        <option :value="'image'" :selected="selectedMediaType === 'image'">Images</option>
+        <option :value="'video'" :selected="selectedMediaType === 'video'">Videos</option>
+    </select>
+</div>
+
+
+    <div class="lg:w-[60%] w-[90%] my-6 flex flex-row flex-wrap">
+      <div class="lg:w-[21%] w-[45%] mx-[2%] flex flex-col" v-for="(media, index) in filteredMediaList" :key="index">
         <img v-if="isImage(media)" class="w-[100%] h-60 object-cover object-center border border-main rounded-3xl"
           :src="media.url" alt="Image">
         <video v-if="!isImage(media)" class="w-[100%] h-60 object-cover object-center border border-main rounded-3xl"

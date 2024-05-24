@@ -3,7 +3,6 @@
     <div class="wrapper font-futura fixed w-full z-10">
       <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">Media Bank</h1>
       <nav class="relative lg:px-7 lg:py-5 flex justify-between items-center bg-gradient-main">
-        
         <div class="flex">
             <RouterLink to="/"><img src="./images/logo.png" alt="Logo" class="w-[150px]  p-3 lg:p-0"></RouterLink>
             <!-- web menu -->
@@ -15,16 +14,14 @@
               </li>
             </ul>
         </div>
-
-        
         <div class="lg:hidden">
-              <button class="navbar-burger flex items-center text-white p-3 lg:p-0" @click="toggleMenu">
-                <svg class="block h-7 w-7 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <title>Mobile menu</title>
-                  <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
-                </svg>
-              </button>
-            </div>
+          <button class="navbar-burger flex items-center text-white p-3 lg:p-0" @click="toggleMenu">
+            <svg class="block h-7 w-7 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <title>Mobile menu</title>
+              <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
+            </svg>
+          </button>
+        </div>
         <div class="relative hidden lg:inline-block dropdown">
           <svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" viewBox="0 0 448 512">
             <path fill="#ffffff" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/>
@@ -33,7 +30,6 @@
             <button class="bg-red" @click="logOut">Log Out</button>
           </div>
         </div>
-
       </nav>
       <div class="navbar-menu relative z-50 hidden">
         <div class="navbar-backdrop fixed inset-0 bg-gray-800 opacity-25" @click="toggleMenu"></div>
@@ -48,7 +44,6 @@
               </svg>
             </button>
           </div>
-          
           <ul>
             <li v-for="link in filteredLinks" :key="link.to" class="mb-1 py-3 px-4 border-b-border border-b">
               <RouterLink :to="link.to" :class="{ active: isActive(link.to) }" class="text-p font-futura">
@@ -67,9 +62,10 @@
   </footer>
 </template>
 
+
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router';
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import login from './modules/login.js';
 import useProducts from './modules/products.js';
 import isAdmin from './modules/isAdmin.js';
@@ -105,12 +101,16 @@ const isActive = (linkTo) => {
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
-  const menu = document.querySelector('.navbar-menu');
-  if (menuOpen.value) {
-    menu.classList.remove('hidden');
-  } else {
-    menu.classList.add('hidden');
-  }
+  nextTick(() => {
+    const menu = document.querySelector('.navbar-menu');
+    if (menu) {
+      if (menuOpen.value) {
+        menu.classList.remove('hidden');
+      } else {
+        menu.classList.add('hidden');
+      }
+    }
+  });
 };
 
 onMounted(() => {
@@ -137,26 +137,22 @@ watch(route, () => {
 </script>
 
 <style scoped>
-
 .navbar-admin {
   width: 70%;
 }
-
 .navbar-user {
   width: 60%;
 }
-
 .dropdown:hover .dropdown-content {
   display: block;
 }
-
 .navMenus a {
   color: #000;
   text-decoration: none;
   padding: 10px;
 }
-
 .active {
   color: #5d88b3;
 }
 </style>
+

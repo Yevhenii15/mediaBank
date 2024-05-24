@@ -1,6 +1,6 @@
 <!-- EquipmentDetails.vue -->
 <template>
-  <div v-if="equipment" class="w-[100%] px-[5%] flex flex-wrap justify-center font-futura pt-10 relative top-[7vh] lg:top-[15vh] mb-[15vh]">
+  <div v-if="equipment" class="w-[100%] px-[5%] flex flex-wrap justify-center font-futura pt-10 relative top-[7vh] lg:top-[15vh] mb-[15vh] lg:mb-[25vh]">
     <!-- Buttons for other equipment pages -->
     <div class="lg:flex flex-col w-[25%] lg:w-[11%] fixed left-0 hidden">
       <button v-for="item in allEquipment" :key="item.id"
