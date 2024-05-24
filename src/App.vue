@@ -63,13 +63,13 @@
   </header>
   <RouterView />
   <footer v-if="isLoggedIn">
-    <h1 class="bg-[#5d88b3] font-futura text-white p-0.5 text-center">2024</h1>
+    <h1 class="bg-[#5d88b3] font-futura fixed w-[100%] bottom-0 text-white p-0.5 text-center">2024</h1>
   </footer>
 </template>
 
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import login from './modules/login.js';
 import useProducts from './modules/products.js';
 import isAdmin from './modules/isAdmin.js';
@@ -127,6 +127,12 @@ onMounted(() => {
       getProductsData();
     }
   });
+});
+// Close the mobile menu when navigating to another page
+watch(route, () => {
+  if (menuOpen.value) {
+    toggleMenu();
+  }
 });
 </script>
 
