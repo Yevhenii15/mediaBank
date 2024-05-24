@@ -1,24 +1,33 @@
 <!-- EquipmentDetails.vue -->
 <template>
-  <div v-if="equipment" class="w-[100%] px-[5%] flex font-futura pt-10 relative top-[15vh] mb-[20vh]">
+  <div v-if="equipment" class="w-[100%] px-[5%] flex flex-wrap justify-center font-futura pt-10 relative top-[7vh] lg:top-[15vh] mb-[15vh]">
     <!-- Buttons for other equipment pages -->
-    <div class="flex flex-col w-[11%] fixed left-0">
+    <div class="lg:flex flex-col w-[25%] lg:w-[11%] fixed left-0 hidden">
       <button v-for="item in allEquipment" :key="item.id"
-        :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': item.id === equipmentId }]"
+        :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-4 lg:pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': item.id === equipmentId }]"
         @click="goToEquipment(item.id)">
         {{ item.equipmentName }}
       </button>
     </div>
 
-    <div class="pictures w-[50%] flex-col flex items-center">
+    <!-- Buttons for other equipment pages mobile -->
+    <div class="flex justify-between w-[90%] lg:hidden">
+      <button v-for="item in allEquipment" :key="item.id"
+        :class="['bg-white flex w-[31%] text-main border border-main rounded-xl  justify-center p-2 uppercase my-5 font-bold', { 'active-filter': item.id === equipmentId }]"
+        @click="goToEquipment(item.id)">
+        {{ item.equipmentName }}
+      </button>
+    </div>
+
+    <div class="pictures w-[90%] lg:w-[50%] flex-col flex items-center">
       <!-- Main equipment image -->
       <div class="relative w-[100%] flex justify-center">
-        <img class="w-96 h-96 object-cover object-center cursor-pointer border border-main"
+        <img class=" w-[100%] lg:w-96 h-96 object-cover object-center cursor-pointer border border-main"
           :src="equipment.equipmentImages[0]" alt="Main Equipment Image" @click="toggleDeleteButton(0)" />
       </div>
 
       <!-- Additional equipment images -->
-      <div class="w-96">
+      <div class="lg:w-96 w-[100%]">
         <div class="w-[103%] gap-[3%] flex flex-wrap">
           <div v-for="(image, index) in equipment.equipmentImages.slice(1)" :key="index" class="relative w-[22%] mt-5">
             <img class="border w-[100%] h-24 border-main object-cover object-center cursor-pointer" :src="image"
@@ -28,7 +37,7 @@
       </div>
 
       <!-- Button to add more images -->
-      <div class="w-96 mt-5 flex">
+      <div class="lg:w-96 w-[100%] mt-5 flex">
         <div v-if="isAdminUser">
           <input class="hidden" type="file" id="imageInput" name="file" @change="handleImageUpload($event, equipment)"
             multiple :data-equipment="equipment.id" />
@@ -45,11 +54,12 @@
       </div>
     </div>
 
-    <div class="info w-[50%] flex flex-col">
+    <div class="info w-[90%] lg:w-[50%] flex flex-col">
 
       <h1 class="w-[100%] uppercase text-[50px] text-text">{{ newEquipmentName }}</h1>
       <h1 class="text-text uppercase my-3 text-p">Description</h1>
       <p class="w-[100%]">{{ newEquipmentDescription }}</p>
+
       <div class="mt-7 w-[100%]">
         <h1 class="text-text uppercase text-p">Files</h1>
         <!-- Language Filter Dropdown -->
@@ -63,14 +73,14 @@
           </select>
         </div>
 
-        <ul>
+        <ul class="my-3">
           <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
             <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
-            <div>
+            <div class="flex">
               <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)"
-                class="text-text underline px-[20px] rounded-lg mr-5">Delete File</button>
+                class="text-text underline lg:px-[20px] rounded-lg mr-2 lg:mr-5">Delete File</button>
               <button
-                class="bg-white text-main border border-main px-[40px] rounded-lg mr-5 hover:bg-main hover:text-white"
+                class="bg-white text-main border border-main lg:px-[40px] px-3 rounded-lg lg:mr-5 hover:bg-main hover:text-white"
                 @click="downloadFile(file.url)">Download File</button>
             </div>
           </li>
@@ -91,7 +101,7 @@
             <option value="ukrainian">Ukrainian</option>
           </select>
           <button
-            class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
+            class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura ml-5"
             @click="openFileInput('fileInput')">Add File</button>
         </div>
 

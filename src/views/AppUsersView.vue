@@ -1,5 +1,5 @@
 <template>
-  <div class="px-5 lg:px-0 font-futura flex flex-col items-center w-full py-5 relative top-[15vh] mb-[15vh]">
+  <div class="px-5 lg:px-0 font-futura flex flex-col items-center w-full py-5 relative top-[10vh] lg:top-[15vh] mb-[10vh]">
     <div class="h1text flex justify-start w-full md:w-3/4 px-4 md:px-0">
       <h1 class="text-2xl text-main">Add New User:</h1>
     </div>
