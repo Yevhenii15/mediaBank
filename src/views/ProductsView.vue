@@ -3,13 +3,20 @@
     <div class="font-futura flex justify-center w-[100%] relative top-[15vh] mb-[15vh]">
         <!-- Buttons to filter products -->
         <div class="flex flex-col w-[11%] fixed left-0">
-                <button @click="filterProducts('all')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'all' }]">All</button>
-                <button @click="filterProducts('face')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'face' }]">Face</button>
-                <button @click="filterProducts('eye')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7  uppercase my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'eye' }]">Eye</button>
-                <button @click="filterProducts('hair')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', {  'active-filter': selectedProductType === 'hair' }]">Hair</button>
-                <button @click="filterProducts('serum')" :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum' }]">Serum</button>
-                <button @click="filterProducts('serum-device')" :class="['bg-white flex text-main border border-main rounded-e-3xl uppercase p-2 pl-7 my-3 font-bold border-l-0', {'active-filter': selectedProductType === 'serum-device' }]">Serum Device</button>
-            </div>
+            <button @click="filterProducts('all')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'all' }]">All</button>
+            <button @click="filterProducts('face')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'face' }]">Face</button>
+            <button @click="filterProducts('eye')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7  uppercase my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'eye' }]">Eye</button>
+            <button @click="filterProducts('hair')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'hair' }]">Hair</button>
+            <button @click="filterProducts('serum')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum' }]">Serum</button>
+            <button @click="filterProducts('serum-device')"
+                :class="['bg-white flex text-main border border-main rounded-e-3xl uppercase p-2 pl-7 my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum-device' }]">Serum
+                Device</button>
+        </div>
         <div class="w-[60%]">
             <div v-if="isAdminUser"> <!-- Use v-if instead of v-show -->
                 <!-- Title for section -->
@@ -30,12 +37,13 @@
                 </div>
                 <div class="flex my-8">
                     <textarea class="w-[48%] pt-1 border border-main rounded-lg pl-3  h-16 mr-[2%]"
-                        v-model="addProductData.productDescription" type="text" placeholder="Product Description"></textarea>
+                        v-model="addProductData.productDescription" type="text"
+                        placeholder="Product Description"></textarea>
                     <div class="w-[48%] ml-[2%] flex flex-col justify-between">
                         <input
                             class="w-[100%] file:h-16 file:w-[50%] file:bg-white file:text-main file:border file:border-main file:px-[40px] file:rounded-lg file:mr-5 file:hover:bg-main file:hover:text-white font-futura"
                             type="file" @change="handleImageUpload($event, null)" multiple :data-product="null">
-                        
+
                     </div>
                 </div>
                 <div class="flex justify-center w-[100%]">
@@ -43,17 +51,18 @@
                         @click="firebaseAddSingleItem">Add Product</button>
                 </div>
             </div>
-            
+
             <!-- Displaying and editing products -->
             <div class="w-[100%] flex flex-wrap my-7">
                 <!-- Looping through all products -->
-                <div class="w-[21%] mx-[2%]  border border-main rounded-3xl my-3" v-for="product in filteredProducts" :key="product.id">
+                <div class="w-[21%] mx-[2%]  border border-main rounded-3xl my-3" v-for="product in filteredProducts"
+                    :key="product.id">
                     <router-link :to="'/product/' + product.id" class="flex flex-col items-center">
                         <div v-if="product.productImages && product.productImages.length > 0">
                             <img download class="w-48 h-48 object-cover object-center rounded-3xl"
                                 :src="product.productImages[0]" alt="Product Image" />
                         </div>
-                        <h1 class="text-text text-[17px] uppercase relative top-[-10px] font-bold mb-2">
+                        <h1 class="text-text text-[17px] uppercase relative text-center top-[-10px] font-bold mb-2">
                             {{ product.productName }}
                         </h1>
                     </router-link>
@@ -117,7 +126,8 @@ const filteredProducts = computed(() => {
 
 <style scoped>
 .active-filter {
-    background-color: #5d89b3; /* Change to your desired active color */
+    background-color: #5d89b3;
+    /* Change to your desired active color */
     color: white;
 }
 </style>
