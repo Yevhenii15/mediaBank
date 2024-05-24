@@ -8,9 +8,6 @@ import AppUsersView from '@/views/AppUsersView.vue';
 import LoginForm from '@/components/LoginForm.vue';
 import { onAuthStateChanged } from 'firebase/auth';
 import ProductDetailes from '@/components/ProductDetailes.vue';
-import OxygenEquipment from '@/views/OxygenEquipment.vue';
-import MicroEquipment from '@/views/MicroEquipment.vue';
-import LedEquipment from '@/views/LedEquipment.vue';
 import isAdmin from '../modules/isAdmin.js'; 
 import EquipmentDetailes from '@/views/EquipmentDetails.vue';
 
@@ -22,30 +19,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/oxyequipment',
-      name: 'oxyequipment',
-      component: OxygenEquipment,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/ledequipment',
-      name: 'ledequipment',
-      component: LedEquipment,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/microequipment',
-      name: 'microequipment',
-      component: MicroEquipment,
       meta: {
         requiresAuth: true,
       },
