@@ -1,5 +1,6 @@
 <template>
-  <div v-if="product" class="flex flex-col md:flex-row font-futura pt-10 relative top-[10vh] lg:top-[15vh]] mb-[15vh] p-5">
+  <div v-if="product" class="flex flex-col md:flex-row font-futura pt-10 relative top-[10vh] lg:top-[15vh] mb-[15vh] p-5">
+    <a href="/products"><img src="../images/right-arrow.png" class="lg:w-[100%] " alt=""></a>
     <!-- Product Images -->
     <div class="w-full md:w-1/2 flex flex-wrap justify-center px-4 md:px-0 mb-8 md:mb-0">
       <!-- Main product image -->
