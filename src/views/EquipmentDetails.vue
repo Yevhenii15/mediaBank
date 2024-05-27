@@ -162,7 +162,16 @@ onMounted(() => {
         });
     }
   });
+  const clearErrorMessage = () => {
+  setTimeout(() => {
+    errorMessage.value = ''; // Clear the error message after 10 seconds
+  }, 3000); // 3000 milliseconds = 10 seconds
+};
 
+// Watch for changes in the errorMessage value and set a timer to clear it
+watch(errorMessage, () => {
+  clearErrorMessage();
+});
   getEquipmentById(equipmentId.value).then((fetchedEquipment) => {
     equipment.value = fetchedEquipment;
     newEquipmentName.value = fetchedEquipment.equipmentName;
@@ -196,9 +205,18 @@ const toggleDeleteButton = (index) => {
   }
 };
 
-const deleteImageHandler = (equipment, selectedImage) => {
-  deleteImage(equipment, selectedImage);
+const deleteImageHandler = (equipment, selectedImageIndex) => {
+  deleteImage(equipment, selectedImageIndex).then(() => {
+    // Check if the deleted image was the currently selected one
+    if (selectedImage.value === selectedImageIndex) {
+      // Reset selectedImage to null
+      selectedImage.value = null;
+    }
+  }).catch(error => {
+    console.error('Error deleting image:', error);
+  });
 };
+
 
 const deleteFileHandler = (equipment, index) => {
   deleteFile(equipment, index).catch(error => {

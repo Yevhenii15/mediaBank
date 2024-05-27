@@ -82,48 +82,48 @@ const useProducts = () => {
 
 
 
-  // Function to download files from Firebase Storage
-  const downloadFile = async (imageUrl) => {
+  const downloadFile = async (mediaUrl) => {
     try {
-      const imageRef = storageRef(storage, imageUrl); // Get the reference using the initialized storage
-      const downloadUrl = await getDownloadURL(imageRef);
-
-      // Fetch the image data as a blob
+      const mediaRef = storageRef(storage, mediaUrl); // Get the reference using the initialized storage
+      const downloadUrl = await getDownloadURL(mediaRef);
+  
+      // Fetch the media data as a blob
       const response = await fetch(downloadUrl);
-
+  
       if (!response.ok) {
-        throw new Error(`Failed to fetch image (${response.status} ${response.statusText})`);
+        throw new Error(`Failed to fetch media (${response.status} ${response.statusText})`);
       }
-
+  
       const blob = await response.blob();
-
+  
       // Extract filename without query parameters and duplicate extensions
-      const filenameParts = imageUrl.split('/').pop().split('?')[0].replace('products%2Ffiles%2F', '').split('.');
-      const filename = filenameParts.slice(0, -1).join('.');
+      const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
+      let filename = filenameParts.slice(0, -1).join('.');
+      filename = filename.replace(/%20/g, '-'); // Replace %20 with -
       const extension = filenameParts.pop();
       const filenameWithExtension = `${filename}.${extension}`;
-
-
-      // Create a blob URL for the image
+  
+      // Create a blob URL for the media
       const blobUrl = URL.createObjectURL(blob);
-
+  
       // Create a link element
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = filenameWithExtension; // Set the filename correctly
       a.style.display = 'none'; // Hide the link
       document.body.appendChild(a);
-
+  
       // Simulate a click event on the link
       a.click();
-
+  
       // Clean up
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error('Error downloading image:', error);
+      console.error('Error downloading media:', error);
     }
   };
+
 
   // Function to upload images to Firebase Storage
   const handleImageUpload = async (event, product) => {
