@@ -1,4 +1,3 @@
-// index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import SoMeView from '../views/SoMeView.vue';
@@ -8,7 +7,7 @@ import AppUsersView from '@/views/AppUsersView.vue';
 import LoginForm from '@/components/LoginForm.vue';
 import { onAuthStateChanged } from 'firebase/auth';
 import ProductDetailes from '@/components/ProductDetailes.vue';
-import isAdmin from '../modules/isAdmin.js'; 
+import isAdmin from '../modules/isAdmin.js';
 import EquipmentDetailes from '@/views/EquipmentDetails.vue';
 
 
@@ -19,6 +18,14 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/products',
+      name: 'products',
+      component: ProductsView,
       meta: {
         requiresAuth: true,
       },
@@ -40,19 +47,11 @@ const router = createRouter({
       },
     },
     {
-      path: '/products',
-      name: 'products',
-      component: ProductsView,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: '/login',
       name: 'login',
       component: LoginForm,
     },
-  
+
     {
       path: '/equipment/:id',
       name: 'equipment-detailes',
@@ -93,7 +92,7 @@ router.beforeEach(async (to, from, next) => {
   } else if (requiresAdmin) {
     // Check if user is authenticated and has admin role
     if (currentUser) {
-      const isAdminUser = await isAdmin(currentUser.uid); // Use isAdmin function
+      const isAdminUser = await isAdmin(currentUser.uid);
       if (isAdminUser) {
         // User is authenticated and has admin role, allow access
         next();

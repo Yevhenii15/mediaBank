@@ -1,12 +1,12 @@
-/* equipment.js */
 import { ref } from 'vue';
 import { db } from '../firebase.js';
-import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, getDoc, query, orderBy, getDocs } from 'firebase/firestore'; // Added getDocs
+import { collection, onSnapshot, doc, updateDoc, getDoc, query, orderBy, getDocs } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 const storage = getStorage();
 
 const useEquipment = () => {
+
   const showUpdatePopup = ref(false);
   const equipment = ref([]);
   const addEquipmentData = ref({
@@ -16,8 +16,8 @@ const useEquipment = () => {
     equipmentImages: [],
     equipmentFiles: [],
   });
-  const selectedLanguage = ref(''); // Make sure this is defined
-  const errorMessage = ref(''); // Add error message reactive variable
+  const selectedLanguage = ref('');
+  const errorMessage = ref('');
 
 
   const getEquipmentById = async (equipmentId) => {
@@ -35,40 +35,42 @@ const useEquipment = () => {
     }
     return null;
   };
+
+
   const downloadFile = async (mediaUrl) => {
     try {
       const mediaRef = storageRef(storage, mediaUrl); // Get the reference using the initialized storage
       const downloadUrl = await getDownloadURL(mediaRef);
-  
+
       // Fetch the media data as a blob
       const response = await fetch(downloadUrl);
-  
+
       if (!response.ok) {
         throw new Error(`Failed to fetch media (${response.status} ${response.statusText})`);
       }
-  
+
       const blob = await response.blob();
-  
+
       // Extract filename without query parameters and duplicate extensions
       const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
       let filename = filenameParts.slice(0, -1).join('.');
-      filename = filename.replace(/%20/g, '-'); // Replace %20 with -
+      filename = filename.replace(/%20/g, '-');
       const extension = filenameParts.pop();
       const filenameWithExtension = `${filename}.${extension}`;
-  
+
       // Create a blob URL for the media
       const blobUrl = URL.createObjectURL(blob);
-  
+
       // Create a link element
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = filenameWithExtension; // Set the filename correctly
       a.style.display = 'none'; // Hide the link
       document.body.appendChild(a);
-  
+
       // Simulate a click event on the link
       a.click();
-  
+
       // Clean up
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
@@ -86,7 +88,7 @@ const useEquipment = () => {
       return;
     }
 
-    errorMessage.value = ''; // Clear the error message if everything is fine
+    errorMessage.value = '';
 
     const promises = Array.from(files).map(async (file) => {
       const folderName = equipment ? equipment.equipmentName.replace(/\s+/g, '_') : 'new';
@@ -114,8 +116,7 @@ const useEquipment = () => {
 
     await Promise.all(promises);
   };
-  
-  
+
 
   const handleImageUpload = async (event, equipment) => {
     const images = event.target.files;
@@ -150,23 +151,23 @@ const useEquipment = () => {
       if (!equipment.equipmentFiles || !equipment.equipmentFiles[index]) {
         throw new Error('File not found in equipment files array.');
       }
-  
+
       const fileUrl = equipment.equipmentFiles[index].url; // Ensure this is correct
-      console.log('Deleting file with URL:', fileUrl);
-  
+      // console.log('Deleting file with URL:', fileUrl);
+
       // Validate that fileUrl is a string
       if (typeof fileUrl !== 'string') {
         throw new TypeError('File URL is not a string.');
       }
-  
+
       // Create storage reference
       const storageReference = storageRef(storage, fileUrl);
       console.log('Storage reference created:', storageReference);
-  
+
       // Delete the file from Firebase Storage
       await deleteObject(storageReference);
       console.log('File deleted successfully from storage.');
-  
+
       // Remove the file from the equipment files array
       equipment.equipmentFiles.splice(index, 1);
       await updateDoc(doc(db, 'equipment', equipment.id), {
@@ -177,7 +178,7 @@ const useEquipment = () => {
       console.error('Error deleting file:', error);
     }
   };
-  
+
 
 
   const deleteImage = async (equipment, index) => {
@@ -209,7 +210,7 @@ const useEquipment = () => {
 
   const getAllEquipment = async () => {
     const equipmentList = [];
-    const querySnapshot = await getDocs(collection(db, 'equipment')); // Use getDocs to fetch all documents
+    const querySnapshot = await getDocs(collection(db, 'equipment'));
     querySnapshot.forEach((doc) => {
       equipmentList.push({ id: doc.id, ...doc.data() });
     });
@@ -229,7 +230,7 @@ const useEquipment = () => {
     updateEquipmentInFirestore,
     getAllEquipment,
     downloadFile,
-    selectedLanguage, // Make sure this is included if needed in other parts
+    selectedLanguage,
     errorMessage
   };
 };

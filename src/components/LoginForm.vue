@@ -9,7 +9,7 @@
                 class="w-full max-w-md mb-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-3">
                 {{ errorMessage }}
             </div>
-
+            <!-- Login Form -->
             <div class="w-full max-w-md mb-4 px-3 flex border border-border rounded-2xl items-center">
                 <img class="w-5 pr-2 border-r border-border py-2" src="../images/user.svg" alt="User Icon">
                 <input class="w-full pl-3 py-2" placeholder="Username" v-model="email" />
@@ -25,6 +25,8 @@
             <button class="w-full max-w-md bg-main text-white py-3 rounded-xl font-bold drop-shadow-md"
                 @click="logIn">LOG IN</button>
         </div>
+
+
     </div>
 </template>
 
@@ -32,7 +34,3 @@
 import login from '../modules/login.js';
 const { email, password, logIn, errorMessage } = login();
 </script>
-
-<style scoped>
-/* Add any additional styling here */
-</style>

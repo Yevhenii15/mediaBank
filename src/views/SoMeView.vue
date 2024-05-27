@@ -13,7 +13,8 @@
     file:mr-5
     file:hover:bg-text
     font-futura " type="file" @change="handleMediaUpload($event)" multiple :data-product="null">
-<button :disabled="isLoading" class="hover:bg-text w-[30%] bg-main text-white lg:px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add Post</button>
+        <button :disabled="isLoading" class="hover:bg-text w-[30%] bg-main text-white lg:px-[70px] py-[9px] rounded-lg"
+          @click="reloadPage">Add Post</button>
       </div>
       <h1 class="my-4 text-main border border-main rounded-xl p-2 lg:w-[50%] w-[90%]" v-if="isLoading">Loading...</h1>
 
@@ -29,15 +30,18 @@
         :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': selectedMediaType === 'video' }]">Videos</button>
     </div>
 
+    <!-- Filter Buttons Mobile -->
     <div class="flex justify-between w-[90%] lg:hidden">
-    <select @change="filterMedia($event.target.value)" class="bg-white text-main border border-main rounded-xl p-2 uppercase font-bold">
+      <select @change="filterMedia($event.target.value)"
+        class="bg-white text-main border border-main rounded-xl p-2 uppercase font-bold">
         <option :value="'all'" :selected="selectedMediaType === 'all'">All</option>
         <option :value="'image'" :selected="selectedMediaType === 'image'">Images</option>
         <option :value="'video'" :selected="selectedMediaType === 'video'">Videos</option>
-    </select>
-</div>
+      </select>
+    </div>
 
 
+    <!-- Media List -->
     <div class="lg:w-[60%] w-[90%] my-6 flex flex-row flex-wrap">
       <div class="lg:w-[21%] w-[45%] mx-[2%] flex flex-col" v-for="(media, index) in filteredMediaList" :key="index">
         <img v-if="isImage(media)" class="w-[100%] h-60 object-cover object-center border border-main rounded-3xl"
@@ -59,20 +63,28 @@
 
 
 <script setup>
-import SoMePost from '../modules/some.js';
-const { handleImageUpload, handleVideoUpload, getMediaFromStorage, deleteMedia } = SoMePost();
-
 import { ref, onMounted } from 'vue';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage';
+import SoMePost from '../modules/some.js';
+import useProducts from '../modules/products.js';
+import isAdmin from '../modules/isAdmin.js';
+import { auth } from '../firebase.js';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const storage = getStorage(); // Initialize Firebase Storage
+const { handleImageUpload, handleVideoUpload, getMediaFromStorage, deleteMedia, downloadMedia } = SoMePost();
+const {
+  getProductsData,
+} = useProducts();
+
+
+const isLoading = ref(false);
+let isAdminUser = false;
 const mediaList = ref([]);
 const filteredMediaList = ref([]);
 const selectedMediaType = ref('all');
 
 const handleMediaDeletion = (deletedMediaUrl) => {
   mediaList.value = mediaList.value.filter(media => media.url !== deletedMediaUrl);
-  filterMedia(selectedMediaType.value); // Update filtered list after deletion
+  filterMedia(selectedMediaType.value);
 };
 
 const deleteMediaHandler = (mediaUrl) => {
@@ -81,7 +93,7 @@ const deleteMediaHandler = (mediaUrl) => {
 
 onMounted(async () => {
   mediaList.value = await getMediaFromStorage();
-  filterMedia('all'); // Initialize the filtered list
+  filterMedia('all');
 });
 
 const reloadPage = () => {
@@ -100,82 +112,6 @@ const filterMedia = (type) => {
     filteredMediaList.value = mediaList.value.filter(media => media.type === type);
   }
 };
-
-import useProducts from '../modules/products.js';
-import isAdmin from '../modules/isAdmin.js';
-const isLoading = ref(false);
-
-const {
-  getProductsData,
-} = useProducts();
-
-let isAdminUser = false;
-
-import { auth } from '../firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
-
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isAdmin(user.uid).then((isAdmin) => {
-        isAdminUser = isAdmin;
-        getProductsData();
-      }).catch((error) => {
-        console.error('Error checking admin role:', error);
-      });
-    } else {
-      isAdminUser = false;
-      getProductsData();
-    }
-  });
-});
-
-const downloadMedia = async (mediaUrl) => {
-  try {
-    const mediaRef = storageRef(storage, mediaUrl); // Get the reference using the initialized storage
-    const downloadUrl = await getDownloadURL(mediaRef);
-
-    // Fetch the media data as a blob
-    const response = await fetch(downloadUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch media (${response.status} ${response.statusText})`);
-    }
-
-    const blob = await response.blob();
-
-    // Extract filename without query parameters and duplicate extensions
-    const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
-    let filename = filenameParts.slice(0, -1).join('.');
-    filename = filename.replace(/%20/g, '-'); // Replace %20 with -
-    const extension = filenameParts.pop();
-    const filenameWithExtension = `${filename}.${extension}`;
-
-    // Create a blob URL for the media
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Create a link element
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filenameWithExtension; // Set the filename correctly
-    a.style.display = 'none'; // Hide the link
-    document.body.appendChild(a);
-
-    // Simulate a click event on the link
-    a.click();
-
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-  } catch (error) {
-    console.error('Error downloading media:', error);
-  }
-};
-
-
-
-
-
 
 const handleMediaUpload = async (event) => {
   isLoading.value = true;
@@ -203,6 +139,21 @@ const handleMediaUpload = async (event) => {
   }
 };
 
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid).then((isAdmin) => {
+        isAdminUser = isAdmin;
+        getProductsData();
+      }).catch((error) => {
+        console.error('Error checking admin role:', error);
+      });
+    } else {
+      isAdminUser = false;
+      getProductsData();
+    }
+  });
+});
 </script>
 
 
@@ -228,7 +179,6 @@ const handleMediaUpload = async (event) => {
 
 .active-filter {
   background-color: #5d89b3;
-  /* Change to your desired active color */
   color: white;
 }
 </style>

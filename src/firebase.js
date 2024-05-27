@@ -1,12 +1,10 @@
-// firebase.js
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; // <- needed for DB
 import { getStorage } from 'firebase/storage'; // <- needed for Storage
 import { getAuth } from 'firebase/auth'; // <- needed for Authentication
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBl3bx4TX_wakNOpBFLdkmm8ahEgGULLz8",
   authDomain: "mediabank-518fe.firebaseapp.com",
