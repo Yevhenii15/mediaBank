@@ -33,6 +33,11 @@ export default function login() {
         email: user.email,
         role: role,
       });
+      await signOut(auth);
+      nextTick(() => {
+        router.push('/login');
+      });
+     
 
       // console.log('User signed up and data stored in Firestore');
     } catch (error) {
