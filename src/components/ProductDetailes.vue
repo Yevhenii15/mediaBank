@@ -1,6 +1,6 @@
 <template>
   <div v-if="product" class="flex flex-col md:flex-row font-futura pt-10 relative top-[10vh] lg:top-[15vh] mb-[15vh] p-5">
-    <a href="/products"><img src="../images/right-arrow.png" class="lg:w-[100%] " alt=""></a>
+    <a href="/products"><img src="../images/right-arrow.png" class="lg:w-[100% lg:block hidden ] " alt=""></a>
     <!-- Product Images -->
     <div class="w-full md:w-1/2 flex flex-wrap justify-center px-4 md:px-0 mb-8 md:mb-0">
       <!-- Main product image -->
@@ -199,7 +199,16 @@ watch(
     }
   }
 );
+const clearErrorMessage = () => {
+  setTimeout(() => {
+    errorMessage.value = ''; // Clear the error message after 10 seconds
+  }, 3000); // 3000 milliseconds = 10 seconds
+};
 
+// Watch for changes in the errorMessage value and set a timer to clear it
+watch(errorMessage, () => {
+  clearErrorMessage();
+});
 const toggleDeleteButton = (index) => {
   if (selectedImage.value === index) {
     selectedImage.value = null;
@@ -208,9 +217,18 @@ const toggleDeleteButton = (index) => {
   }
 };
 
-const deleteImageHandler = (product, selectedImage) => {
-  deleteImage(product, selectedImage);
+const deleteImageHandler = (product, selectedImageIndex) => {
+  deleteImage(product, selectedImageIndex).then(() => {
+    // Check if the deleted image was the currently selected one
+    if (selectedImage.value === selectedImageIndex) {
+      // Reset selectedImage to null
+      selectedImage.value = null;
+    }
+  }).catch(error => {
+    console.error('Error deleting image:', error);
+  });
 };
+
 
 const deleteFileHandler = (product, index) => {
   deleteFile(product, index).catch(error => {

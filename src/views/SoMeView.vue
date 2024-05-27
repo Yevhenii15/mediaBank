@@ -1,22 +1,22 @@
 <template>
-  <div class="flex flex-col items-center font-futura relative top-[15vh] mb-[15vh]  px-[5%]">
+  <div class="flex flex-col items-center font-futura relative lg:top-[15vh] top-[10vh] mb-[15vh]  px-[5%]">
     <div v-if="isAdminUser" class="w-[100%] flex items-center flex-col mt-[20px]">
       <h1 class="text-text font-futura text-p">ADD SOME POST</h1>
       <div class="lg:w-[50%] w-[90%] flex justify-between  my-[20px]">
-        <input class="file:bg-main w-[70%]  
-
-            file:text-white
-            file:border-none
-            lg:file:px-[40px]
-            file:px-[10%]
-            file:py-[9px]
-            file:rounded-lg
-            file:mr-5
-            file:hover:bg-text
-            font-futura " type="file" @change="handleMediaUpload($event)" multiple :data-product="null">
-        <button class="hover:bg-text w-[30%] bg-main text-white lg:px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add
-          Post</button>
+        <input :disabled="isLoading" class="file:bg-main w-[70%]  
+    file:text-white
+    file:border-none
+    lg:file:px-[40px]
+    file:px-[10%]
+    file:py-[9px]
+    file:rounded-lg
+    file:mr-5
+    file:hover:bg-text
+    font-futura " type="file" @change="handleMediaUpload($event)" multiple :data-product="null">
+<button :disabled="isLoading" class="hover:bg-text w-[30%] bg-main text-white lg:px-[70px] py-[9px] rounded-lg" @click="reloadPage">Add Post</button>
       </div>
+      <h1 class="my-4 text-main border border-main rounded-xl p-2 lg:w-[50%] w-[90%]" v-if="isLoading">Loading...</h1>
+
     </div>
 
     <!-- Filter Buttons -->
@@ -103,6 +103,7 @@ const filterMedia = (type) => {
 
 import useProducts from '../modules/products.js';
 import isAdmin from '../modules/isAdmin.js';
+const isLoading = ref(false);
 
 const {
   getProductsData,
@@ -144,8 +145,9 @@ const downloadMedia = async (mediaUrl) => {
     const blob = await response.blob();
 
     // Extract filename without query parameters and duplicate extensions
-    const filenameParts = mediaUrl.split('/').pop().split('?')[0].replace('some%2F', '').split('.');
-    const filename = filenameParts.slice(0, -1).join('.');
+    const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
+    let filename = filenameParts.slice(0, -1).join('.');
+    filename = filename.replace(/%20/g, '-'); // Replace %20 with -
     const extension = filenameParts.pop();
     const filenameWithExtension = `${filename}.${extension}`;
 
@@ -170,19 +172,37 @@ const downloadMedia = async (mediaUrl) => {
   }
 };
 
-const handleMediaUpload = (event) => {
+
+
+
+
+
+const handleMediaUpload = async (event) => {
+  isLoading.value = true;
+
   const files = event.target.files;
   const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
   const videoFiles = Array.from(files).filter(file => file.type.startsWith('video/'));
 
-  if (imageFiles.length) {
-    handleImageUpload({ target: { files: imageFiles } });
-  }
+  try {
+    const uploadPromises = [];
 
-  if (videoFiles.length) {
-    handleVideoUpload({ target: { files: videoFiles } });
+    if (imageFiles.length) {
+      uploadPromises.push(handleImageUpload({ target: { files: imageFiles } }));
+    }
+
+    if (videoFiles.length) {
+      uploadPromises.push(handleVideoUpload({ target: { files: videoFiles } }));
+    }
+
+    await Promise.all(uploadPromises);
+  } catch (error) {
+    console.error('Error uploading media:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
+
 </script>
 
 

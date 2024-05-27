@@ -15,9 +15,6 @@
                 :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'hair' }]">Hair</button>
             <button @click="filterProducts('serum')"
                 :class="['bg-white flex text-main border border-main rounded-e-3xl p-2 pl-7 uppercase  my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum' }]">Serum</button>
-            <button @click="filterProducts('serum-device')"
-                :class="['bg-white flex text-main border border-main rounded-e-3xl uppercase p-2 pl-7 my-3 font-bold border-l-0', { 'active-filter': selectedProductType === 'serum-device' }]">Serum
-                Device</button>
         </div>
 
 
