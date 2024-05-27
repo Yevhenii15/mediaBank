@@ -14,10 +14,10 @@ export default function login() {
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      console.log('User:', user);
+      // console.log('User:', user);
       isLoggedIn.value = true;
     } else {
-      console.log('No user signed in.');
+      // console.log('No user signed in.');
       isLoggedIn.value = false;
     }
   });
@@ -34,26 +34,24 @@ export default function login() {
         role: role,
       });
 
-      console.log('User signed up and data stored in Firestore');
+      // console.log('User signed up and data stored in Firestore');
     } catch (error) {
       errorMessage.value = 'Try another email or password!';
       console.error('Error signing up:', error);
     }
   };
+
   const logIn = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
       const user = userCredential.user;
 
-      // Set isLoggedIn to true after successful login
-      isLoggedIn.value = true; // Update isLoggedIn value
+      isLoggedIn.value = true;
 
       email.value = '';
       password.value = '';
       console.log('User logged in:', user.uid);
-      // send user to the homepage
       nextTick(() => {
-        // Redirect the user to the homepage
         router.push('/');
       });
     } catch (error) {
@@ -66,19 +64,16 @@ export default function login() {
   const logOut = async () => {
     try {
       if (auth.currentUser) {
-        // Attempt to sign out the user
         await signOut(auth);
         nextTick(() => {
-          // Redirect the user to the homepage
           router.push('/login');
         });
-        console.log('User logged out.');
+        // console.log('User logged out.');
       } else {
         console.error('No user is authenticated. Unable to log out.');
       }
     } catch (error) {
       console.error('Firestore operation error:', error);
-      // Handle the error or log additional information as needed
     }
   };
 

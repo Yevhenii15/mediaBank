@@ -1,9 +1,11 @@
 <template>
-  <div v-if="product" class="flex flex-col md:flex-row font-futura pt-10 relative top-[10vh] lg:top-[15vh] mb-[15vh] p-5">
+  <div v-if="product"
+    class="flex flex-col md:flex-row font-futura pt-10 relative top-[10vh] lg:top-[15vh] mb-[15vh] p-5">
     <a href="/products"><img src="../images/right-arrow.png" class="lg:w-[100% lg:block hidden ] " alt=""></a>
-    <!-- Product Images -->
+    <!-- Product Image -->
     <div class="w-full md:w-1/2 flex flex-wrap justify-center px-4 md:px-0 mb-8 md:mb-0">
-      <!-- Main product image -->
+
+      <!-- Main product images -->
       <div class="relative w-full flex justify-center">
         <img class="w-full md:w-96 h-96 object-cover object-center cursor-pointer border border-main"
           :src="product.productImages[0]" alt="Main Product Image" @click="toggleDeleteButton(0)" />
@@ -34,6 +36,7 @@
           <button v-if="selectedImage !== null" @click="deleteImageHandler(product, selectedImage)"
             class="bg-main text-white border px-4 py-2 rounded-lg">Delete</button>
         </div>
+
       </div>
     </div>
 
@@ -61,7 +64,6 @@
       <!-- Files -->
       <div class="mt-7 w-full">
         <h1 class="text-text uppercase text-p">Files</h1>
-
         <!-- Language Filter Dropdown -->
         <div>
           <select v-model="selectedFilterLanguage" class="border border-main p-2 rounded-lg my-2">
@@ -72,6 +74,7 @@
             <option value="ukrainian">Ukrainian</option>
           </select>
         </div>
+
         <!-- Pop-up window for update confirmation -->
         <div v-if="showUpdatePopup"
           class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
@@ -96,6 +99,7 @@
 
         <!-- Add File Input and Language Selection -->
         <div v-if="isAdminUser" class="w-full my-2">
+          <!-- Error message -->
           <div v-if="errorMessage" class="my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
             {{ errorMessage }}
           </div>
@@ -112,6 +116,7 @@
             class="bg-white text-main border border-main px-4 py-2 rounded-lg hover:bg-main hover:text-white font-futura"
             @click="openFileInput('fileInput')">Add File</button>
         </div>
+
       </div>
     </div>
   </div>
@@ -122,7 +127,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import useProducts from '../modules/products.js';
 import isAdmin from '../modules/isAdmin.js';
 import { auth } from '../firebase.js';
@@ -143,7 +148,6 @@ const {
 } = useProducts();
 
 const route = useRoute();
-const router = useRouter();
 const productId = ref(route.params.id);
 const product = ref(null);
 const isAdminUser = ref(false);
@@ -152,15 +156,65 @@ const selectedImage = ref(null);
 const newProductName = ref('');
 const newProductDescription = ref('');
 
-
 const selectedFilterLanguage = ref('');
-
 const filteredFiles = computed(() => {
   if (!selectedFilterLanguage.value) {
     return product.value ? product.value.productFiles : [];
   }
   return product.value.productFiles.filter(file => file.language === selectedFilterLanguage.value);
 });
+
+const clearErrorMessage = () => {
+  setTimeout(() => {
+    errorMessage.value = '';
+  }, 3000);
+};
+
+const toggleDeleteButton = (index) => {
+  if (selectedImage.value === index) {
+    selectedImage.value = null;
+  } else {
+    selectedImage.value = index;
+  }
+};
+
+const deleteImageHandler = (product, selectedImageIndex) => {
+  deleteImage(product, selectedImageIndex).then(() => {
+    // Check if the deleted image was the currently selected one
+    if (selectedImage.value === selectedImageIndex) {
+      // Reset selectedImage to null
+      selectedImage.value = null;
+    }
+  }).catch(error => {
+    console.error('Error deleting image:', error);
+  });
+};
+
+const deleteFileHandler = (product, index) => {
+  deleteFile(product, index).catch(error => {
+    console.error('Error in deleteFileHandler:', error);
+  });
+};
+
+const openFileInput = (inputId) => {
+  document.getElementById(inputId).click();
+};
+
+const closeUpdatePopup = () => {
+  showUpdatePopup.value = false;
+};
+
+const getFileName = (fileUrl) => {
+  // Decode the URL
+  const decodedUrl = decodeURIComponent(fileUrl);
+  // Split the decoded URL by '/' and get the last element
+  const parts = decodedUrl.split('/');
+  // Get the last part of the URL
+  const fileNameWithExtension = parts[parts.length - 1];
+  // Split the filename by '.' and get the first part (filename without extension)
+  const fileName = fileNameWithExtension.split('.')[0];
+  return fileName;
+};
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
@@ -174,7 +228,6 @@ onMounted(() => {
         });
     }
   });
-
   getProductById(productId.value).then((fetchedProduct) => {
     product.value = fetchedProduct;
     newProductName.value = fetchedProduct.productName;
@@ -199,59 +252,9 @@ watch(
     }
   }
 );
-const clearErrorMessage = () => {
-  setTimeout(() => {
-    errorMessage.value = ''; // Clear the error message after 10 seconds
-  }, 3000); // 3000 milliseconds = 10 seconds
-};
 
-// Watch for changes in the errorMessage value and set a timer to clear it
 watch(errorMessage, () => {
   clearErrorMessage();
 });
-const toggleDeleteButton = (index) => {
-  if (selectedImage.value === index) {
-    selectedImage.value = null;
-  } else {
-    selectedImage.value = index;
-  }
-};
 
-const deleteImageHandler = (product, selectedImageIndex) => {
-  deleteImage(product, selectedImageIndex).then(() => {
-    // Check if the deleted image was the currently selected one
-    if (selectedImage.value === selectedImageIndex) {
-      // Reset selectedImage to null
-      selectedImage.value = null;
-    }
-  }).catch(error => {
-    console.error('Error deleting image:', error);
-  });
-};
-
-
-const deleteFileHandler = (product, index) => {
-  deleteFile(product, index).catch(error => {
-    console.error('Error in deleteFileHandler:', error);
-  });
-};
-
-const openFileInput = (inputId) => {
-  document.getElementById(inputId).click();
-};
-const closeUpdatePopup = () => {
-  showUpdatePopup.value = false;
-};
-
-const getFileName = (fileUrl) => {
-  // Decode the URL
-  const decodedUrl = decodeURIComponent(fileUrl);
-  // Split the decoded URL by '/' and get the last element
-  const parts = decodedUrl.split('/');
-  // Get the last part of the URL
-  const fileNameWithExtension = parts[parts.length - 1];
-  // Split the filename by '.' and get the first part (filename without extension)
-  const fileName = fileNameWithExtension.split('.')[0];
-  return fileName;
-};
 </script>

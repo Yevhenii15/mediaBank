@@ -4,11 +4,13 @@
     <div class="h1text flex justify-start w-full md:w-3/4 px-4 md:px-0">
       <h1 class="text-2xl text-main">Add New User:</h1>
     </div>
+
     <!-- Error message display -->
     <div v-if="errorMessage"
       class="w-full md:w-3/4 px-4 md:px-4 lg:px-3 mb-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
       {{ errorMessage }}
     </div>
+
     <div class="info flex flex-col md:flex-row justify-between w-full md:w-3/4 px-4 md:px-0 mt-3 mb-5">
       <div class="emailcl w-full md:w-2/5 mb-4 md:mb-0">
         <h1 class="text-text">Email</h1>
@@ -66,14 +68,14 @@ const { signUp, errorMessage, fetchAllUsers } = login();
 
 const email = ref('');
 const password = ref('');
-const selectedRole = ref('user'); // Default role is user
+const selectedRole = ref('user');
 const users = ref([]);
 
 const handleSignUp = async () => {
   await signUp(email.value, password.value, selectedRole.value);
   email.value = '';
   password.value = '';
-  loadUsers(); // Reload users after signup
+  loadUsers();
 };
 
 const loadUsers = async () => {
@@ -85,7 +87,7 @@ const loadUsers = async () => {
 };
 
 onMounted(() => {
-  loadUsers(); // Load users on component mount
+  loadUsers();
 });
 </script>
 

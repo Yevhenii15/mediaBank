@@ -1,22 +1,22 @@
-// products.js
-
 import { db } from '../firebase.js';
 import { ref } from 'vue';
 import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject, listAll, getMetadata } from 'firebase/storage';
+import { uploadBytes, getDownloadURL, getStorage, ref as storageRef, deleteObject } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
 import { query, orderBy } from 'firebase/firestore';
 import { useRouter } from 'vue-router';
 
 
-const storage = getStorage(); // Initialize Firebase Storage
+const storage = getStorage();
 
 const useProducts = () => {
-  const router = useRouter(); // Initialize the router
 
-  const showUpdatePopup = ref(false); // State to show/hide the update popup
+  const router = useRouter();
+
+  const showUpdatePopup = ref(false);
   const selectedLanguage = ref('');
   const errorMessage = ref('');
+
   const getProductById = async (productId) => {
     try {
       const docRef = doc(db, 'products', productId);
@@ -38,8 +38,49 @@ const useProducts = () => {
   };
 
 
+  const downloadFile = async (mediaUrl) => {
+    try {
+      const mediaRef = storageRef(storage, mediaUrl);
+      const downloadUrl = await getDownloadURL(mediaRef);
 
-  // Function to upload files to Firebase Storage
+      // Fetch the media data as a blob
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch media (${response.status} ${response.statusText})`);
+      }
+
+      const blob = await response.blob();
+
+      // Extract filename without query parameters and duplicate extensions
+      const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
+      let filename = filenameParts.slice(0, -1).join('.');
+      filename = filename.replace(/%20/g, '-'); // Replace %20 with -
+      const extension = filenameParts.pop();
+      const filenameWithExtension = `${filename}.${extension}`;
+
+      // Create a blob URL for the media
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a link element
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filenameWithExtension; // Set the filename correctly
+      a.style.display = 'none'; // Hide the link
+      document.body.appendChild(a);
+
+      // Simulate a click event on the link
+      a.click();
+
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading media:', error);
+    }
+  };
+
+
   const handleFileUpload = async (event, product) => {
     const files = event.target.files;
     if (!selectedLanguage.value) {
@@ -80,56 +121,10 @@ const useProducts = () => {
   };
 
 
-
-
-  const downloadFile = async (mediaUrl) => {
-    try {
-      const mediaRef = storageRef(storage, mediaUrl); // Get the reference using the initialized storage
-      const downloadUrl = await getDownloadURL(mediaRef);
-  
-      // Fetch the media data as a blob
-      const response = await fetch(downloadUrl);
-  
-      if (!response.ok) {
-        throw new Error(`Failed to fetch media (${response.status} ${response.statusText})`);
-      }
-  
-      const blob = await response.blob();
-  
-      // Extract filename without query parameters and duplicate extensions
-      const filenameParts = mediaUrl.split('/').pop().split('?')[0].split('%2F').slice(-1)[0].split('.');
-      let filename = filenameParts.slice(0, -1).join('.');
-      filename = filename.replace(/%20/g, '-'); // Replace %20 with -
-      const extension = filenameParts.pop();
-      const filenameWithExtension = `${filename}.${extension}`;
-  
-      // Create a blob URL for the media
-      const blobUrl = URL.createObjectURL(blob);
-  
-      // Create a link element
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filenameWithExtension; // Set the filename correctly
-      a.style.display = 'none'; // Hide the link
-      document.body.appendChild(a);
-  
-      // Simulate a click event on the link
-      a.click();
-  
-      // Clean up
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-      console.error('Error downloading media:', error);
-    }
-  };
-
-
-  // Function to upload images to Firebase Storage
   const handleImageUpload = async (event, product) => {
-    // Get the file and storage references
     const storage = getStorage();
     const files = event.target.files;
+
     // Check if there are any files
     if (!files.length) return;
 
@@ -140,8 +135,10 @@ const useProducts = () => {
         await uploadBytes(imageRef, file);
         return getDownloadURL(imageRef);
       });
+
       // Wait for all the image uploads to complete
       const imageUrls = await Promise.all(imagePromises);
+
       // Add the image URLs to the product or addProductData
       if (product) {
         // If a product is provided, add images to the product
@@ -162,7 +159,6 @@ const useProducts = () => {
         addProductData.value.productImages.push(...imageUrls);
       }
 
-      // Reset the input field
       event.target.value = '';
     } catch (error) {
       console.error('Error uploading the images:', error);
@@ -191,7 +187,8 @@ const useProducts = () => {
       console.error('Invalid index or image URLs not found.');
     }
   };
-  
+
+
   const deleteFile = async (product, index) => {
     if (index >= 0 && product.productFiles && product.productFiles.length > index) {
       const fileUrl = product.productFiles[index].url;
@@ -213,7 +210,7 @@ const useProducts = () => {
       console.error('Invalid index or file URLs not found.');
     }
   };
-  
+
 
   const updateProductInFirestore = async (product) => {
     try {
@@ -223,7 +220,7 @@ const useProducts = () => {
 
       const docRef = doc(db, 'products', product.id);
       await updateDoc(docRef, product);
-      console.log('Product updated successfully in Firestore');
+      // console.log('Product updated successfully in Firestore');
     } catch (error) {
       console.error('Error updating product in Firestore:', error);
       throw error;
@@ -247,11 +244,11 @@ const useProducts = () => {
     });
   };
 
-  // Add product data
+
   const addProductData = ref({
     productName: '',
     productDescription: '',
-    productType: '', // New property to store the selected product type
+    productType: '',
     productFiles: [],
     productImages: [],
 
@@ -259,34 +256,34 @@ const useProducts = () => {
 
 
 
-  // Add a product to Firestore
+
   const firebaseAddSingleItem = async () => {
     if (
       addProductData.value.productName &&
       addProductData.value.productDescription &&
       addProductData.value.productType &&
-      addProductData.value.productImages.length > 0 // Only check if images are added
+      addProductData.value.productImages.length > 0
     ) {
       try {
         const productData = {
           productName: addProductData.value.productName,
           productDescription: addProductData.value.productDescription,
           productType: addProductData.value.productType,
-          productFiles: addProductData.value.productFiles, // Include product files
-          productImages: addProductData.value.productImages, // Include product images
-          createdAt: new Date(), // Add createdAt timestamp
+          productFiles: addProductData.value.productFiles,
+          productImages: addProductData.value.productImages,
+          createdAt: new Date(),
         };
 
         await addDoc(collection(db, 'products'), productData);
 
-        // Reset fields after adding
+
         addProductData.value.productName = '';
         addProductData.value.productDescription = '';
         addProductData.value.productType = '';
         addProductData.value.productFiles = [];
         addProductData.value.productImages = [];
 
-        console.log('Product added successfully!');
+        // console.log('Product added successfully!');
       } catch (error) {
         console.error('Error adding product:', error);
       }
@@ -296,19 +293,19 @@ const useProducts = () => {
           productName: addProductData.value.productName,
           productDescription: addProductData.value.productDescription,
           productType: addProductData.value.productType,
-          productImages: addProductData.value.productImages, // Include product images only
-          createdAt: new Date(), // Add createdAt timestamp
+          productImages: addProductData.value.productImages,
+          createdAt: new Date(),
         };
 
         await addDoc(collection(db, 'products'), productData);
 
-        // Reset fields after adding
+
         addProductData.value.productName = '';
         addProductData.value.productDescription = '';
         addProductData.value.productType = '';
         addProductData.value.productImages = [];
 
-        console.log('Product added successfully without files!');
+        // console.log('Product added successfully without files!');
       } catch (error) {
         console.error('Error adding product:', error);
       }
@@ -316,15 +313,12 @@ const useProducts = () => {
   };
 
 
-  // Update a product in Firestore
   const firebaseUpdateSingleItem = async (product, newProductName, newProductDescription) => {
     if (product.id) {
       try {
-        // Update the product object with new name and description
         product.productName = newProductName;
         product.productDescription = newProductDescription;
 
-        // Construct the updateData object with updated values
         const updateData = {
           productName: product.productName,
           productDescription: product.productDescription,
@@ -333,11 +327,10 @@ const useProducts = () => {
           productImages: product.productImages,
         };
 
-        // Update the document in Firestore with the updated data
         await updateDoc(doc(db, 'products', product.id), updateData);
 
-        console.log('Product updated successfully!');
-        showUpdatePopup.value = true; // Show the popup after successful update
+        // console.log('Product updated successfully!');
+        showUpdatePopup.value = true;
       } catch (error) {
         console.error('Error updating product:', error);
       }
@@ -348,20 +341,14 @@ const useProducts = () => {
 
 
 
-
-
-  // Delete a product from Firestore and associated images/files from Firebase Storage
   const firebaseDeleteSingleItem = async (id, product) => {
     try {
-      // Delete the product from Firestore
       const docRef = doc(db, 'products', id);
       await deleteDoc(docRef);
-  
-      // Delete associated images from Firebase Storage
+
       if (product && product.productImages) {
         const storage = getStorage();
         for (const imageUrl of product.productImages) {
-          // Ensure imageUrl is a string
           if (typeof imageUrl === 'string') {
             const imageRef = storageRef(storage, imageUrl);
             await deleteObject(imageRef);
@@ -371,13 +358,11 @@ const useProducts = () => {
           }
         }
       }
-  
-      // Delete associated files from Firebase Storage
+
       if (product && product.productFiles) {
         const storage = getStorage();
         for (const file of product.productFiles) {
-          const fileUrl = file.url; // Adjust if your file structure is different
-          // Ensure fileUrl is a string
+          const fileUrl = file.url;
           if (typeof fileUrl === 'string') {
             const fileRef = storageRef(storage, fileUrl);
             await deleteObject(fileRef);
@@ -387,17 +372,16 @@ const useProducts = () => {
           }
         }
       }
-  
-      console.log('Product and associated files deleted successfully!');
-      
-      // Navigate to the products page after deletion
+
+      // console.log('Product and associated files deleted successfully!');
+
       router.push('/products');
-  
+
     } catch (error) {
       console.error('Error deleting product:', error);
     }
   };
-  
+
 
   return {
     getProductsData,

@@ -1,6 +1,7 @@
-<!-- EquipmentDetails.vue -->
 <template>
-  <div v-if="equipment" class="w-[100%] px-[5%] flex flex-wrap justify-center font-futura pt-10 relative top-[7vh] lg:top-[15vh] mb-[15vh] lg:mb-[25vh]">
+  <div v-if="equipment"
+    class="w-[100%] px-[5%] flex flex-wrap justify-center font-futura pt-10 relative top-[7vh] lg:top-[15vh] mb-[15vh] lg:mb-[25vh]">
+
     <!-- Buttons for other equipment pages -->
     <div class="lg:flex flex-col w-[25%] lg:w-[11%] fixed left-0 hidden">
       <button v-for="item in allEquipment" :key="item.id"
@@ -54,8 +55,8 @@
       </div>
     </div>
 
+    <!-- Equipment information -->
     <div class="info w-[90%] lg:w-[50%] flex flex-col">
-
       <h1 class="w-[100%] uppercase text-[50px] text-text">{{ newEquipmentName }}</h1>
       <h1 class="text-text uppercase my-3 text-p">Description</h1>
       <p class="w-[100%]">{{ newEquipmentDescription }}</p>
@@ -73,6 +74,7 @@
           </select>
         </div>
 
+        <!-- List of files -->
         <ul class="my-3">
           <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
             <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
@@ -88,9 +90,11 @@
 
         <!-- Add File Input and Language Selection -->
         <div v-if="isAdminUser">
+
           <div v-if="errorMessage" class="w-[65%] my-4 text-red-500 bg-red-100 border border-red-400 rounded-xl p-2">
             {{ errorMessage }}
           </div>
+
           <input class="hidden" type="file" id="fileInput" name="file" @change="handleFileUpload($event, equipment)"
             multiple :data-equipment="equipment.id" />
           <select v-model="selectedLanguage" class="border border-main p-2 rounded-lg">
@@ -126,8 +130,8 @@ const {
   deleteFile,
   getAllEquipment,
   downloadFile,
-  selectedLanguage, // Import the ref from useEquipment
-  errorMessage, // Import the ref from useEquipment
+  selectedLanguage,
+  errorMessage,
 } = useEquipment();
 
 const route = useRoute();
@@ -150,52 +154,11 @@ const filteredFiles = computed(() => {
   return equipment.value.equipmentFiles.filter(file => file.language === selectedFilterLanguage.value);
 });
 
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isAdmin(user.uid)
-        .then((isAdmin) => {
-          isAdminUser.value = isAdmin;
-        })
-        .catch((error) => {
-          console.error('Error checking admin role:', error);
-        });
-    }
-  });
-  const clearErrorMessage = () => {
+const clearErrorMessage = () => {
   setTimeout(() => {
-    errorMessage.value = ''; // Clear the error message after 10 seconds
-  }, 3000); // 3000 milliseconds = 10 seconds
+    errorMessage.value = '';
+  }, 3000);
 };
-
-// Watch for changes in the errorMessage value and set a timer to clear it
-watch(errorMessage, () => {
-  clearErrorMessage();
-});
-  getEquipmentById(equipmentId.value).then((fetchedEquipment) => {
-    equipment.value = fetchedEquipment;
-    newEquipmentName.value = fetchedEquipment.equipmentName;
-    newEquipmentDescription.value = fetchedEquipment.equipmentDescription;
-  });
-
-  getAllEquipment().then((fetchedAllEquipment) => {
-    allEquipment.value = fetchedAllEquipment;
-  });
-});
-
-watch(
-  () => route.params.id,
-  (newId) => {
-    if (newId) {
-      equipmentId.value = newId;
-      getEquipmentById(newId).then((fetchedEquipment) => {
-        equipment.value = fetchedEquipment;
-        newEquipmentName.value = fetchedEquipment.equipmentName;
-        newEquipmentDescription.value = fetchedEquipment.equipmentDescription;
-      });
-    }
-  }
-);
 
 const toggleDeleteButton = (index) => {
   if (selectedImage.value === index) {
@@ -243,6 +206,51 @@ const getFileName = (fileUrl) => {
   const fileName = fileNameWithExtension.split('.')[0];
   return fileName;
 };
+
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin(user.uid)
+        .then((isAdmin) => {
+          isAdminUser.value = isAdmin;
+        })
+        .catch((error) => {
+          console.error('Error checking admin role:', error);
+        });
+    }
+  });
+
+
+  // Watch for changes in the errorMessage value and set a timer to clear it
+  watch(errorMessage, () => {
+    clearErrorMessage();
+  });
+  getEquipmentById(equipmentId.value).then((fetchedEquipment) => {
+    equipment.value = fetchedEquipment;
+    newEquipmentName.value = fetchedEquipment.equipmentName;
+    newEquipmentDescription.value = fetchedEquipment.equipmentDescription;
+  });
+
+  getAllEquipment().then((fetchedAllEquipment) => {
+    allEquipment.value = fetchedAllEquipment;
+  });
+});
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      equipmentId.value = newId;
+      getEquipmentById(newId).then((fetchedEquipment) => {
+        equipment.value = fetchedEquipment;
+        newEquipmentName.value = fetchedEquipment.equipmentName;
+        newEquipmentDescription.value = fetchedEquipment.equipmentDescription;
+      });
+    }
+  }
+);
+
+
 </script>
 
 
