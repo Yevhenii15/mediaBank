@@ -76,7 +76,7 @@
 
         <!-- List of files -->
         <ul class="my-3">
-          <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between">
+          <li v-for="(file, index) in filteredFiles" :key="index" class="flex justify-between my-2">
             <a class="my-1" :href="file.url" download>{{ getFileName(file.url) }}</a>
             <div class="flex">
               <button v-if="isAdminUser" @click="deleteFileHandler(equipment, index)"
